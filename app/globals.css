@@ -8,6 +8,10 @@
   --background-end-rgb: 256, 256, 256;
 }
 
+.ios-web-app footer {
+  padding-bottom: 20px; /* Adjust this value as needed */
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(

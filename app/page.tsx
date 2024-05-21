@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Div100vh from "react-div-100vh";
 // update
 
@@ -231,6 +231,15 @@ export default function Home() {
       return languages[nextIndex];
     });
   };
+
+  useEffect(() => {
+    if (
+      window.navigator.standalone === true ||
+      window.matchMedia('(display-mode: standalone)').matches
+    ) {
+      document.body.classList.add("ios-web-app");
+    }
+  }, []);
 
   return (
       <div

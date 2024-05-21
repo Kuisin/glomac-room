@@ -11,7 +11,7 @@ library.add(fas)
 
 export default function Admin() {
     const router = useRouter();
-    // change in file
+
     return (
         <div className='flex justify-center items-center'>
             <div className='grid grid-cols-1 lg:grid-cols-2 content-center items-center h-screen gap-8'>

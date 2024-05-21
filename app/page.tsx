@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Div100vh from "react-div-100vh";
 // update
 
 type RoomProps = {
@@ -232,201 +233,201 @@ export default function Home() {
   };
 
   return (
-    <div
-      id="app"
-      className="flex flex-col h-screen justify-between bg-white text-black"
-    >
-      <header className="sticky top-0 left-0 z-50 w-full flex justify-center bg-white px-4 py-4 shadow">
-        <div className="w-full max-w-lg flex flex-row items-center justify-between">
-          <h1 className="font-bold">
-            Forest Gateway
-            {lang === "ja"
-              ? " 空き教室"
-              : lang === "en"
-              ? " - Availability"
-              : ""}
-          </h1>
-          <button
-            className="bg-gray-200 text-gray-800 px-2 py-2 rounded shadow"
-            style={{ cursor: "pointer" }}
-            onClick={() => {
-              changeLanguage();
-            }}
-          >
-            {language.name} {language.flag || ""}
-          </button>
-        </div>
-      </header>
-      <main className="relative w-full overflow-y-scroll mb-auto text-center">
-        <div className="bg-gray-50 w-full flex flex-col items-center">
-          <div className="p-4 w-md max-w-full overflow-x-auto">
-            <div className="flex flex-col gap-3 text-sm w-max">
-              <Floor floor="2" rooms={sampleData} />
-              <Floor floor="3" rooms={sampleData} />
-              <Floor floor="4" rooms={sampleData} />
-              <Floor floor="5" rooms={sampleData} />
-              <Floor floor="6" rooms={sampleData} />
+      <div
+        id="app"
+        className="flex flex-col h-screen justify-between bg-white text-black"
+      >
+        <header className="sticky top-0 left-0 z-50 w-full flex justify-center bg-white px-4 py-4 shadow">
+          <div className="w-full max-w-lg flex flex-row items-center justify-between">
+            <h1 className="font-bold">
+              Forest Gateway
+              {lang === "ja"
+                ? " 空き教室"
+                : lang === "en"
+                ? " - Availability"
+                : ""}
+            </h1>
+            <button
+              className="bg-gray-200 text-gray-800 px-2 py-2 rounded shadow"
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                changeLanguage();
+              }}
+            >
+              {language.name} {language.flag || ""}
+            </button>
+          </div>
+        </header>
+        <main className="relative w-full overflow-y-scroll mb-auto text-center">
+          <div className="bg-gray-50 w-full flex flex-col items-center">
+            <div className="p-4 w-md max-w-full overflow-x-auto">
+              <div className="flex flex-col gap-3 text-sm w-max">
+                <Floor floor="2" rooms={sampleData} />
+                <Floor floor="3" rooms={sampleData} />
+                <Floor floor="4" rooms={sampleData} />
+                <Floor floor="5" rooms={sampleData} />
+                <Floor floor="6" rooms={sampleData} />
+              </div>
             </div>
           </div>
-        </div>
-        <Footer lang={lang} />
-      </main>
-      <footer className="flex justify-center sticky bottom-0 left-0 ">
-        <div className="w-full max-w-lg">
-          <div className="z-50 w-full bg-white p-2 rounded-lg shadow-reverse-y">
-            <div className="flex justify-between">
-              {showList ? (
-                <>
-                  <div className="p-1.5 my-2.5 text-base">
-                    {lang === "ja"
-                      ? "リスト表示"
-                      : lang === "en"
-                      ? "List View"
-                      : ""}
-                  </div>
-                  <button
-                    className="flex items-center"
-                    onClick={() => {
-                      setShowList(!showList);
-                    }}
-                  >
-                    <div className="flex flex-col p-1 rounded border border-gray-400">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="15"
-                        height="15"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                      </svg>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="15"
-                        height="15"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <polyline points="18 15 12 9 6 15"></polyline>
-                      </svg>
+          <Footer lang={lang} />
+        </main>
+        <footer className="flex justify-center sticky bottom-0 left-0 ">
+          <div className="w-full max-w-lg">
+            <div className="z-50 w-full bg-white p-2 rounded-lg shadow-reverse-y">
+              <div className="flex justify-between">
+                {showList ? (
+                  <>
+                    <div className="p-1.5 my-2.5 text-base">
+                      {lang === "ja"
+                        ? "リスト表示"
+                        : lang === "en"
+                        ? "List View"
+                        : ""}
                     </div>
-                  </button>
-                </>
-              ) : (
-                <>
-                  <div className="flex flex-row p-1.5 rounded border border-gray-400 font-light">
-                    <div className="flex flex-row gap-1 text-sm">
-                      {days.map((value, index) => (
-                        <FooterButton
-                          key={index}
-                          name={(lang === "ja"
-                            ? value[0]
-                            : lang === "en"
-                            ? value[1]
-                            : ""
-                          ).substring(0, 1)}
-                          selected={selectedDay == index}
-                          action={() => setSelectedDay(index)}
-                        />
-                      ))}
-                    </div>
-                    <div className="border-l border-gray-400 mx-2"></div>
-                    <div className="flex flex-row gap-1">
-                      {periods.map((value, index) => (
-                        <FooterButton
-                          key={index}
-                          name={(lang === "ja"
-                            ? value[0]
-                            : lang === "en"
-                            ? value[1]
-                            : ""
-                          ).substring(0, 1)}
-                          selected={selectedPeriod == index}
-                          action={() => setSelectedPeriod(index)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  <button
-                    className="flex items-center"
-                    onClick={() => {
-                      setShowList(!showList);
-                    }}
-                  >
-                    <div className="flex flex-col p-1 rounded border border-gray-400">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="15"
-                        height="15"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <polyline points="18 15 12 9 6 15"></polyline>
-                      </svg>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="15"
-                        height="15"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                      </svg>
-                    </div>
-                  </button>
-                </>
-              )}
-            </div>
-            {showList && (
-              <div
-                className={`px-1.5 py-3 grid gap-1 gap-y-2 text-center border rounded-lg ${
-                  lang === "en" && "text-sm"
-                }`}
-                style={{
-                  gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))`,
-                }}
-              >
-                {periods.map((pValue, pIndex) =>
-                  days.map((dValue, dIndex) => (
-                    <div
-                      key={`${dIndex}-${pIndex}`}
-                      className={`p-0.5 rounded ${
-                        selectedDay == dIndex && selectedPeriod == pIndex
-                          ? "bg-green-200"
-                          : "hover:bg-gray-200"
-                      }`}
+                    <button
+                      className="flex items-center"
                       onClick={() => {
-                        setSelectedPeriod(pIndex);
-                        setSelectedDay(dIndex);
+                        setShowList(!showList);
                       }}
                     >
-                      {dValue[lang === "ja" ? 0 : lang === "en" ? 1 : 0] +
-                        " " +
-                        pValue[lang === "ja" ? 0 : lang === "en" ? 1 : 0]}
+                      <div className="flex flex-col p-1 rounded border border-gray-400">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="15"
+                          height="15"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="15"
+                          height="15"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="18 15 12 9 6 15"></polyline>
+                        </svg>
+                      </div>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex flex-row p-1.5 rounded border border-gray-400 font-light">
+                      <div className="flex flex-row gap-1 text-sm">
+                        {days.map((value, index) => (
+                          <FooterButton
+                            key={index}
+                            name={(lang === "ja"
+                              ? value[0]
+                              : lang === "en"
+                              ? value[1]
+                              : ""
+                            ).substring(0, 1)}
+                            selected={selectedDay == index}
+                            action={() => setSelectedDay(index)}
+                          />
+                        ))}
+                      </div>
+                      <div className="border-l border-gray-400 mx-2"></div>
+                      <div className="flex flex-row gap-1">
+                        {periods.map((value, index) => (
+                          <FooterButton
+                            key={index}
+                            name={(lang === "ja"
+                              ? value[0]
+                              : lang === "en"
+                              ? value[1]
+                              : ""
+                            ).substring(0, 1)}
+                            selected={selectedPeriod == index}
+                            action={() => setSelectedPeriod(index)}
+                          />
+                        ))}
+                      </div>
                     </div>
-                  ))
+                    <button
+                      className="flex items-center"
+                      onClick={() => {
+                        setShowList(!showList);
+                      }}
+                    >
+                      <div className="flex flex-col p-1 rounded border border-gray-400">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="15"
+                          height="15"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="18 15 12 9 6 15"></polyline>
+                        </svg>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="15"
+                          height="15"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                      </div>
+                    </button>
+                  </>
                 )}
               </div>
-            )}
+              {showList && (
+                <div
+                  className={`px-1.5 py-3 grid gap-1 gap-y-2 text-center border rounded-lg ${
+                    lang === "en" && "text-sm"
+                  }`}
+                  style={{
+                    gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))`,
+                  }}
+                >
+                  {periods.map((pValue, pIndex) =>
+                    days.map((dValue, dIndex) => (
+                      <div
+                        key={`${dIndex}-${pIndex}`}
+                        className={`p-0.5 rounded ${
+                          selectedDay == dIndex && selectedPeriod == pIndex
+                            ? "bg-green-200"
+                            : "hover:bg-gray-200"
+                        }`}
+                        onClick={() => {
+                          setSelectedPeriod(pIndex);
+                          setSelectedDay(dIndex);
+                        }}
+                      >
+                        {dValue[lang === "ja" ? 0 : lang === "en" ? 1 : 0] +
+                          " " +
+                          pValue[lang === "ja" ? 0 : lang === "en" ? 1 : 0]}
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </footer>
-    </div>
+        </footer>
+      </div>
   );
 }

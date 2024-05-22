@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { format } from 'date-fns';
+import moment from 'moment-timezone';
 
 const prisma = new PrismaClient();
 
@@ -33,7 +34,7 @@ const days = [
     'THU',
     'FRI',
     'SAT',
-    // 'SUN',
+    'SUN',
 ];
 
 const periodTimes: PeriodTime[] = [
@@ -95,8 +96,9 @@ const fetchRoomByFacility = async (facilityId: number) => {
 const fetchResvByRoom = async (todayStr: string, facilityId: number) => {
     // console.log(todayStr);
     const today = new Date(todayStr);
+    const todayServer = new Date()
     const nextWeek = new Date();
-    nextWeek.setDate(today.getDate() + 7);
+    nextWeek.setDate(todayServer.getDate() + 7);
     // console.log(today);
 
     const rooms = await fetchRoomByFacility(facilityId);
@@ -124,15 +126,17 @@ const fetchResvByRoom = async (todayStr: string, facilityId: number) => {
             periodTimes.map((period, pIndex: number) => {
                 availability = {};
                 const { name, startTime, endTime } = period;
-                const date = new Date()
+                const date = new Date(todayStr)
                 date.setDate(today.getDate() + dIndex)
                 const dateStr = format(date, 'yyy-MM-dd')
 
-                const periodStart = new Date(dateStr);
-                periodStart.setHours(parseInt(startTime.split(':')[0]), parseInt(startTime.split(':')[1]), 0, 0);
+                // const periodStart = new Date(dateStr);
+                // periodStart.setHours(parseInt(startTime.split(':')[0]), parseInt(startTime.split(':')[1]), 0, 0);
+                const periodStart = moment.tz(dateStr + ' ' + startTime, 'YYYY-MM-DD HH:mm', 'Asia/Tokyo').toDate();
 
-                const periodEnd = new Date(dateStr);
-                periodEnd.setHours(parseInt(endTime.split(':')[0]), parseInt(endTime.split(':')[1]), 0, 0);
+                // const periodEnd = new Date(dateStr);
+                // periodEnd.setHours(parseInt(endTime.split(':')[0]), parseInt(endTime.split(':')[1]), 0, 0);
+                const periodEnd = moment.tz(dateStr + ' ' + endTime, 'YYYY-MM-DD HH:mm', 'Asia/Tokyo').toDate();
                 // console.log(periodStart, periodEnd);
 
                 rooms.map((room) => {

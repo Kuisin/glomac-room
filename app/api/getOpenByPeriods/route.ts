@@ -92,8 +92,9 @@ const fetchRoomByFacility = async (facilityId: number) => {
     return rooms;
 }
 
-const fetchResvByRoom = async (facilityId: number) => {
-    const today = new Date();
+const fetchResvByRoom = async (todayStr: string, facilityId: number) => {
+    // console.log(todayStr);
+    const today = new Date(todayStr);
     const nextWeek = new Date();
     nextWeek.setDate(today.getDate() + 7);
     // console.log(today);
@@ -175,7 +176,7 @@ const fetchResvByRoom = async (facilityId: number) => {
         throw new Error('error with summarizing availability', err);
     }
 
-    console.log(availabilityAll);
+    // console.log(availabilityAll);
     return { availabilityAll, rooms };
 }
 
@@ -183,10 +184,10 @@ const fetchResvByRoom = async (facilityId: number) => {
 
 export async function POST(req: Request) {
     try {
-        const data: any = req.json();
-        const facilityId = data.facilityId;
+        const data: any = await req.json();
+        const { todayStr, facilityId } = data;
 
-        const { availabilityAll, rooms } = await fetchResvByRoom(facilityId);
+        const { availabilityAll, rooms } = await fetchResvByRoom(todayStr, facilityId);
 
         return NextResponse.json({ ok: true, availabilityAll, rooms }, { status: 200 });
     } catch (err) {

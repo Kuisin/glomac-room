@@ -275,12 +275,15 @@ export default function Home() {
   };
 
   useEffect(() => {
+    const todayStr = format(new Date(),"yyy-MM-dd");
+    console.log(todayStr);
+
     fetch("/api/getOpenByPeriods", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ facilityId: 1 }),
+      body: JSON.stringify({ todayStr, facilityId: 1 }),
     })
       .then((res) => res.json())
       .then((data) => {

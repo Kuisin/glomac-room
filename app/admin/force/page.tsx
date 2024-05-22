@@ -208,7 +208,7 @@ export default function BatchReservations() {
                     facilityId: 1,
                     title: row.title,
                     type: row.type || '',
-                    room: row.room.split(",")[3],
+                    room: row.room.split("-")[3],
                     startTime: row.startTime,
                     endTime: row.endTime,
                 };

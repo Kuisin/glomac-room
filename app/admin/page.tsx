@@ -35,7 +35,7 @@ export default function Admin() {
                     <div className="w-10 h-10 text-gray-500 dark:text-gray-400 mb-4">
                         <FontAwesomeIcon icon={faCalendarDays} className="text-2xl" />
                     </div>
-                    <a onClick={() => router.push('./admin/reservations')} className="cursor-pointer">
+                    <a onClick={() => router.push('./admin/force')} className="cursor-pointer">
                         <h5 className="mb-2 text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">Add Weekly Bookings</h5>
                     </a>
                     <p className="mb-3 font-normal text-gray-500 dark:text-gray-400">Go to this step by step guideline process on how to add weekly bookings:</p>

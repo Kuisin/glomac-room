@@ -204,9 +204,11 @@ export default function BatchReservations() {
         try {
             const uploadData = csvData.map((row) => {
                 return {
+                    universityId: 1,
+                    facilityId: 1,
                     title: row.title,
                     type: row.type || '',
-                    room: row.room,
+                    room: row.room.split(",")[3],
                     startTime: row.startTime,
                     endTime: row.endTime,
                 };
@@ -216,14 +218,18 @@ export default function BatchReservations() {
                 return;
             }
             setError('');
-            console.log(uploadData);
+            // console.log(uploadData);
 
             const response = await fetch('/api/uploadCsv', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(uploadData),
+                body: JSON.stringify({ data: uploadData, info: {
+                    type: 'FORCE',
+                    universityId: 1,
+                    facilityId: 1,
+                }}),
             });
 
             if (!response.ok) {

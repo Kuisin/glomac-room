@@ -1,6 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
-import Div100vh from "react-div-100vh";
+import { useEffect, useState } from "react";
+import { format } from 'date-fns';
 // update
 
 type RoomProps = {
@@ -21,7 +21,7 @@ type Language = {
 };
 
 type Days = "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN";
-type Periods = "1" | "2" | "L" | "3" | "4" | "5" | "6";
+type Periods = "1" | "2" | "L" | "3" | "4" | "5" | "6" | "7" | "E";
 
 const sampleData = [
   {
@@ -62,35 +62,6 @@ const openUi = "bg-green-200 text-green-800";
 const closedUi = "bg-gray-200 text-gray-800";
 
 const feedbackFormUrl = "google.com";
-
-const Room = ({ floor, name, open }: RoomProps) => {
-  return (
-    <button
-      className={`w-18 px-2 py-1 rounded shadow ${open ? openUi : closedUi}`}
-    >
-      <p className="text-sm">{name}</p>
-      <p className="text-sm">{open ? "◯" : "Ｘ"}</p>
-    </button>
-  );
-};
-
-const Floor = ({ floor, rooms }: FloorProps) => {
-  return (
-    <div id={`floor-${floor}`} className="flex gap-3 w-max">
-      <a className="bg-gray-200 text-gray-800 px-3 py-4 rounded shadow mr-2">
-        {floor}
-      </a>
-      {rooms.map((room: RoomProps) => (
-        <Room
-          key={`${floor}-${room.name}`}
-          floor={floor}
-          name={room.name}
-          open={room.open}
-        />
-      ))}
-    </div>
-  );
-};
 
 const Footer = ({ lang }: { lang: string }) => {
   return (
@@ -197,8 +168,76 @@ const periods = [
   ["4", "4"],
   ["5", "5"],
   ["6", "6"],
-  // ['夜', 'N'],
+  // ["7", "7"],
+  ["夜", "N"],
 ];
+
+const Room = ({ name, open }: RoomProps) => {
+  return (
+    <button
+      className={`w-18 px-2 py-1 rounded shadow ${open ? openUi : closedUi}`}
+    >
+      <p className="text-sm">{name}</p>
+      <p className="text-sm">{open ? "◯" : "Ｘ"}</p>
+    </button>
+  );
+};
+
+const Floor = ({ floor, rooms }: FloorProps) => {
+  return (
+    <div id={`floor-${floor}`} className="flex gap-3 w-max">
+      <a className="bg-gray-200 text-gray-800 px-3 py-4 rounded shadow mr-2">
+        {floor}
+      </a>
+      {rooms.map((room: RoomProps) => (
+        <Room
+          key={`${floor}-${room.name}`}
+          floor={floor}
+          name={room.name}
+          open={room.open}
+        />
+      ))}
+    </div>
+  );
+};
+
+const Floors = ({
+  day,
+  periodNo,
+  availability,
+}: {
+  day: number;
+  periodNo: number;
+  availability: any;
+}) => {
+  const date = new Date();
+  date.setDate(date.getDate() + ((day + 8 - date.getDay()) % 7));
+  const dateStr = format(date, "yyy-MM-dd");
+  const currentSelection = availability[dateStr][periodNo];
+  // console.log(availability);
+  console.log(availability[dateStr])
+  console.log(dateStr);
+
+  return (
+    <>
+      <div>Floors</div>
+      {Object.keys(currentSelection).map((fKey: string) => {
+        const floorData: any = Object.keys(currentSelection[fKey]).map(
+          (rKey: string) => {
+            const data = {
+              name: rKey,
+              open: currentSelection[fKey][rKey].open,
+            };
+            return data;
+          }
+        );
+
+        // console.log(day, periodNo, floorData);
+        return <Floor key={fKey} floor={fKey} rooms={floorData} />;
+      })}
+    </>
+  );
+};
 
 export default function Home() {
   const languages: Language[] = [
@@ -220,6 +259,10 @@ export default function Home() {
   const [selectedDay, setSelectedDay] = useState<number>(0);
   const [selectedPeriod, setSelectedPeriod] = useState<number>(0);
 
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [availability, setAvailability] = useState<any>({});
+  const [rooms, setRooms] = useState<any>([]);
+
   const changeLanguage = () => {
     setLanguage((prevLanguage) => {
       const currentIndex = languages.findIndex(
@@ -233,210 +276,228 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (
-      window.navigator.standalone === true ||
-      window.matchMedia('(display-mode: standalone)').matches
-    ) {
-      document.body.classList.add("ios-web-app");
-    }
+    fetch("/api/getOpenByPeriods", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ facilityId: 1 }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.ok) {
+          setAvailability(data.availabilityAll);
+          setRooms(data.rooms);
+          setIsLoading(false);
+        }
+      });
   }, []);
 
   return (
-      <div
-        id="app"
-        className="flex flex-col h-screen justify-between bg-white text-black"
-      >
-        <header className="sticky top-0 left-0 z-50 w-full flex justify-center bg-white px-4 py-4 shadow">
-          <div className="w-full max-w-lg flex flex-row items-center justify-between">
-            <h1 className="font-bold">
-              Forest Gateway
-              {lang === "ja"
-                ? " 空き教室"
-                : lang === "en"
-                ? " - Availability"
-                : ""}
-            </h1>
-            <button
-              className="bg-gray-200 text-gray-800 px-2 py-2 rounded shadow"
-              style={{ cursor: "pointer" }}
-              onClick={() => {
-                changeLanguage();
-              }}
-            >
-              {language.name} {language.flag || ""}
-            </button>
-          </div>
-        </header>
-        <main className="relative w-full overflow-y-scroll mb-auto text-center">
-          <div className="bg-gray-50 w-full flex flex-col items-center">
-            <div className="p-4 w-md max-w-full overflow-x-auto">
-              <div className="flex flex-col gap-3 text-sm w-max">
-                <Floor floor="2" rooms={sampleData} />
-                <Floor floor="3" rooms={sampleData} />
-                <Floor floor="4" rooms={sampleData} />
-                <Floor floor="5" rooms={sampleData} />
-                <Floor floor="6" rooms={sampleData} />
-              </div>
-            </div>
-          </div>
-          <Footer lang={lang} />
-        </main>
-        <footer className="flex justify-center sticky bottom-0 left-0 ">
-          <div className="w-full max-w-lg">
-            <div className="z-50 w-full bg-white p-2 rounded-lg shadow-reverse-y">
-              <div className="flex justify-between">
-                {showList ? (
-                  <>
-                    <div className="p-1.5 my-2.5 text-base">
-                      {lang === "ja"
-                        ? "リスト表示"
-                        : lang === "en"
-                        ? "List View"
-                        : ""}
-                    </div>
-                    <button
-                      className="flex items-center"
-                      onClick={() => {
-                        setShowList(!showList);
-                      }}
-                    >
-                      <div className="flex flex-col p-1 rounded border border-gray-400">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="15"
-                          height="15"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <polyline points="6 9 12 15 18 9"></polyline>
-                        </svg>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="15"
-                          height="15"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <polyline points="18 15 12 9 6 15"></polyline>
-                        </svg>
-                      </div>
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex flex-row p-1.5 rounded border border-gray-400 font-light">
-                      <div className="flex flex-row gap-1 text-sm">
-                        {days.map((value, index) => (
-                          <FooterButton
-                            key={index}
-                            name={(lang === "ja"
-                              ? value[0]
-                              : lang === "en"
-                              ? value[1]
-                              : ""
-                            ).substring(0, 1)}
-                            selected={selectedDay == index}
-                            action={() => setSelectedDay(index)}
-                          />
-                        ))}
-                      </div>
-                      <div className="border-l border-gray-400 mx-2"></div>
-                      <div className="flex flex-row gap-1">
-                        {periods.map((value, index) => (
-                          <FooterButton
-                            key={index}
-                            name={(lang === "ja"
-                              ? value[0]
-                              : lang === "en"
-                              ? value[1]
-                              : ""
-                            ).substring(0, 1)}
-                            selected={selectedPeriod == index}
-                            action={() => setSelectedPeriod(index)}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    <button
-                      className="flex items-center"
-                      onClick={() => {
-                        setShowList(!showList);
-                      }}
-                    >
-                      <div className="flex flex-col p-1 rounded border border-gray-400">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="15"
-                          height="15"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <polyline points="18 15 12 9 6 15"></polyline>
-                        </svg>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="15"
-                          height="15"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <polyline points="6 9 12 15 18 9"></polyline>
-                        </svg>
-                      </div>
-                    </button>
-                  </>
-                )}
-              </div>
-              {showList && (
-                <div
-                  className={`px-1.5 py-3 grid gap-1 gap-y-2 text-center border rounded-lg ${
-                    lang === "en" && "text-sm"
-                  }`}
-                  style={{
-                    gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))`,
-                  }}
-                >
-                  {periods.map((pValue, pIndex) =>
-                    days.map((dValue, dIndex) => (
-                      <div
-                        key={`${dIndex}-${pIndex}`}
-                        className={`p-0.5 rounded ${
-                          selectedDay == dIndex && selectedPeriod == pIndex
-                            ? "bg-green-200"
-                            : "hover:bg-gray-200"
-                        }`}
-                        onClick={() => {
-                          setSelectedPeriod(pIndex);
-                          setSelectedDay(dIndex);
-                        }}
-                      >
-                        {dValue[lang === "ja" ? 0 : lang === "en" ? 1 : 0] +
-                          " " +
-                          pValue[lang === "ja" ? 0 : lang === "en" ? 1 : 0]}
-                      </div>
-                    ))
-                  )}
-                </div>
+    <div
+      id="app"
+      className="flex flex-col h-screen justify-between bg-white text-black"
+    >
+      <header className="sticky top-0 left-0 z-50 w-full flex justify-center bg-white px-4 py-4 shadow">
+        <div className="w-full max-w-lg flex flex-row items-center justify-between">
+          <h1 className="font-bold">
+            Forest Gateway
+            {lang === "ja"
+              ? " 空き教室"
+              : lang === "en"
+              ? " - Availability"
+              : ""}
+          </h1>
+          <button
+            className="bg-gray-200 text-gray-800 px-2 py-2 rounded shadow"
+            style={{ cursor: "pointer" }}
+            onClick={() => {
+              changeLanguage();
+            }}
+          >
+            {language.name} {language.flag || ""}
+          </button>
+        </div>
+      </header>
+      <main className="relative w-full overflow-y-scroll mb-auto text-center">
+        <div className="bg-gray-50 w-full flex flex-col items-center">
+          <div className="p-4 w-md max-w-full overflow-x-auto">
+            <div className="flex flex-col gap-3 text-sm w-max">
+              {/* <div>{JSON.stringify(availability)}</div> */}
+              {/* <div>{JSON.stringify(rooms)}</div> */}
+              {/* <Floor floor="2" rooms={sampleData} />
+              <Floor floor="3" rooms={sampleData} />
+              <Floor floor="4" rooms={sampleData} />
+              <Floor floor="5" rooms={sampleData} />
+              <Floor floor="6" rooms={sampleData} /> */}
+              {!isLoading && (
+                <Floors
+                  day={selectedDay}
+                  periodNo={selectedPeriod}
+                  availability={availability}
+                />
               )}
             </div>
           </div>
-        </footer>
-      </div>
+        </div>
+        <Footer lang={lang} />
+      </main>
+      <footer className="flex justify-center sticky bottom-0 left-0 ">
+        <div className="w-full max-w-lg">
+          <div className="z-50 w-full bg-white p-2 rounded-lg shadow-reverse-y">
+            <div className="flex justify-between">
+              {showList ? (
+                <>
+                  <div className="p-1.5 my-2.5 text-base">
+                    {lang === "ja"
+                      ? "リスト表示"
+                      : lang === "en"
+                      ? "List View"
+                      : ""}
+                  </div>
+                  <button
+                    className="flex items-center"
+                    onClick={() => {
+                      setShowList(!showList);
+                    }}
+                  >
+                    <div className="flex flex-col p-1 rounded border border-gray-400">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="18 15 12 9 6 15"></polyline>
+                      </svg>
+                    </div>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="flex flex-row p-1.5 rounded border border-gray-400 font-light">
+                    <div className="flex flex-row gap-1 text-sm">
+                      {days.map((value, index) => (
+                        <FooterButton
+                          key={index}
+                          name={(lang === "ja"
+                            ? value[0]
+                            : lang === "en"
+                            ? value[1]
+                            : ""
+                          ).substring(0, 1)}
+                          selected={selectedDay == index}
+                          action={() => setSelectedDay(index)}
+                        />
+                      ))}
+                    </div>
+                    <div className="border-l border-gray-400 mx-2"></div>
+                    <div className="flex flex-row gap-1">
+                      {periods.map((value, index) => (
+                        <FooterButton
+                          key={index}
+                          name={(lang === "ja"
+                            ? value[0]
+                            : lang === "en"
+                            ? value[1]
+                            : ""
+                          ).substring(0, 1)}
+                          selected={selectedPeriod == index}
+                          action={() => setSelectedPeriod(index)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <button
+                    className="flex items-center"
+                    onClick={() => {
+                      setShowList(!showList);
+                    }}
+                  >
+                    <div className="flex flex-col p-1 rounded border border-gray-400">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="18 15 12 9 6 15"></polyline>
+                      </svg>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </div>
+                  </button>
+                </>
+              )}
+            </div>
+            {showList && (
+              <div
+                className={`px-1.5 py-3 grid gap-1 gap-y-2 text-center border rounded-lg ${
+                  lang === "en" && "text-sm"
+                }`}
+                style={{
+                  gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))`,
+                }}
+              >
+                {periods.map((pValue, pIndex) =>
+                  days.map((dValue, dIndex) => (
+                    <div
+                      key={`${dIndex}-${pIndex}`}
+                      className={`p-0.5 rounded ${
+                        selectedDay == dIndex && selectedPeriod == pIndex
+                          ? "bg-green-200"
+                          : "hover:bg-gray-200"
+                      }`}
+                      onClick={() => {
+                        setSelectedPeriod(pIndex);
+                        setSelectedDay(dIndex);
+                      }}
+                    >
+                      {dValue[lang === "ja" ? 0 : lang === "en" ? 1 : 0] +
+                        " " +
+                        pValue[lang === "ja" ? 0 : lang === "en" ? 1 : 0]}
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </footer>
+    </div>
   );
 }

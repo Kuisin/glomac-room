@@ -5,47 +5,103 @@ const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
     try {
-        const data = await req.json();
+        const { data, info } = await req.json();
+
+        if (!info.type || !info.universityId || !info.facilityId) {
+            throw new Error('Missing required fields (info)');
+        }
+        const { type, universityId, facilityId } = info;
+
+        let university = await prisma.university.findUnique({
+            where: { id: universityId },
+        });
+        let facility = await prisma.facility.findUnique({
+            where: { id: facilityId }
+        })
+        if (!university || !facility) {
+            throw new Error('unknown university and/or facility');
+        }
 
         const reservations = [];
         for (const row of data) {
             if (!row.title || !row.room || !row.startTime || !row.endTime) {
-                throw new Error('Missing required fields');
+                console.log('Skip row: Missing required fields');
+                continue;
             }
-            if (!row.type) row.type = 'unknown';
 
             const startTime = new Date(row.startTime);
             const endTime = new Date(row.endTime);
 
-            let room = await prisma.room.findFirst({
-                where: { name: row.room },
-            });
 
+            let room = await prisma.room.findFirst({
+                where: {
+                    universityId: university.id,
+                    facilityId: facility.id,
+                    name: row.room
+                },
+            });
             if (!room) {
                 room = await prisma.room.create({
-                    data: { facilityId: 1, name: row.room },
+                    data: {
+                        universityId: university.id,
+                        facilityId: facility.id,
+                        floor: 'other',
+                        name: row.room
+                    },
                 });
             }
 
             // Create reservation
             reservations.push({
-                title: row.title,
-                type: row.type,
+                title: row.title || 'unknow',
+                group: row.type,
+                type: info.type,
                 roomId: room.id,
                 startTime,
                 endTime,
-                userId: row.user ? parseInt(row.user) : null,
+                userId: row.user || null,
             });
         }
 
-        const createdReservations = await prisma.resv.createMany({
-            data: reservations,
-        });
+        let createdReservations;
+        if (info.type == 'COURSE') {
+            createdReservations = await prisma.resv.createMany({
+                data: reservations,
+            });
+        } else if (info.type == 'FORCE') {
+            try {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
 
-        return NextResponse.json({ success: true, createdReservations }, { status: 201 });
+                const rooms = await prisma.room.findMany({
+                    where: { facilityId: facility.id },
+                    select: { id: true },
+                });
+                const roomIds = rooms.map(room => room.id);
+
+                await prisma.resv.deleteMany({
+                    where: {
+                        roomId: { in: roomIds },
+                        type: 'FORCE',
+                        startTime: {
+                            gt: today,
+                        },
+                    },
+                });
+
+                createdReservations = await prisma.resv.createMany({
+                    data: reservations,
+                });
+            } catch (err: any) {
+                console.log(err);
+                throw new Error('cannot clear or add to db', err)
+            }
+        } else { throw new Error('unknown db'); }
+
+        return NextResponse.json({ ok: true, createdReservations }, { status: 201 });
     } catch (err) {
         console.error('Error creating reservations:', err);
-        return NextResponse.json({ success: false, error: err }, { status: 500 });
+        return NextResponse.json({ ok: false, error: err }, { status: 500 });
     } finally {
         await prisma.$disconnect();
     }

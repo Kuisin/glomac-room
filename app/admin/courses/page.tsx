@@ -61,26 +61,12 @@ const toDateInputValue = (date: string) => {
     const day = parseInt(date.substring(8, 10), 10);
 
     const parsedDate = new Date(year, month, day);
-    // console.log(year, month, day);
     return format(parsedDate, "yyyy-MM-dd");
-    // if (isNaN(parsedDate.getTime())) {
-    //     throw new RangeError('Invalid time value');
-    // }
-    const tzOffset = parsedDate.getTimezoneOffset() * 60000;
-    const localISOTime = (new Date(parsedDate.getTime() - tzOffset)).toISOString().slice(0, -1);
-    return localISOTime.substring(0, 16); // 'YYYY-MM-DDTHH:MM'
 };
 
 const toTimeInputValue = (time: string) => {
     const hours = time.split(':')[0];
     const minutes = time.split(':')[1];
-    // console.log(hours, minutes)
-
-    // if (hours === undefined || minutes === undefined) {
-    //     throw new RangeError('Invalid time value');
-    // }
-
-    // Ensure the time is in the correct format
     const formattedTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
     return formattedTime;
 };
@@ -283,6 +269,8 @@ export default function CourseReservations() {
             const repeatedData = repeatSchedules(csvData);
             const uploadData = repeatedData.map((row) => {
                 return {
+                    universityId: 1,
+                    facilityId: 1,
                     title: row.title,
                     type: row.type || '',
                     room: row.room,
@@ -303,7 +291,11 @@ export default function CourseReservations() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(uploadData),
+                body: JSON.stringify({ data: uploadData, info: {
+                    type: 'COURSE',
+                    universityId: 1,
+                    facilityId: 1,
+                }}),
             });
 
             if (!response.ok) {

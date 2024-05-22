@@ -25,12 +25,21 @@ export async function GET() {
 
 export async function POST(req: Request) {
     try {
-        let status = 'pending';
-        let { title, type, room, startTime, endTime, description, userId } = await req.json();
+        let { universityId, facilityId, title, type, room, startTime, endTime, description, userId } = await req.json();
 
         // Ensure that startTime and endTime are valid Date objects
         const parsedStartTime = new Date(startTime);
         const parsedEndTime = new Date(endTime);
+
+        let university = await prisma.university.findUnique({
+            where: { id: universityId },
+        });
+        let facility = await prisma.facility.findUnique({
+            where: { id: facilityId }
+        })
+        if (!university || !facility) {
+            throw new Error('unknown university and/or facility');
+        }
 
         // Validate required fields
         if (!title || !room || !parsedStartTime || !parsedEndTime) {
@@ -47,13 +56,17 @@ export async function POST(req: Request) {
 
         if (!newRoom) {
             newRoom = await prisma.room.create({
-                data: { facilityId: 1, name: room },
+                data: {
+                    universityId: university.id,
+                    facilityId: facility.id,
+                    floor: 'other',
+                    name: room
+                },
             });
         }
 
         const resv = await prisma.resv.create({
             data: {
-                status,
                 title,
                 type,
                 roomId: newRoom.id,

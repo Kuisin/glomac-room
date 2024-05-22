@@ -215,12 +215,11 @@ const Floors = ({
   const dateStr = format(date, "yyy-MM-dd");
   const currentSelection = availability[dateStr][periodNo];
   // console.log(availability);
-  console.log(availability[dateStr])
   console.log(dateStr);
+  console.log(availability);
 
   return (
     <>
-      <div>Floors</div>
       {Object.keys(currentSelection).map((fKey: string) => {
         const floorData: any = Object.keys(currentSelection[fKey]).map(
           (rKey: string) => {

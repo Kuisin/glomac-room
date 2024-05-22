@@ -73,11 +73,6 @@ const periodTimes: PeriodTime[] = [
         startTime: '18:50',
         endTime: '20:30',
     },
-    // {
-    //     name: 'P7',
-    //     startTime: '18:50',
-    //     endTime: '20:30',
-    // },
     {
         name: 'EVENING',
         startTime: '20:30',
@@ -130,12 +125,7 @@ const fetchResvByRoom = async (todayStr: string, facilityId: number) => {
                 date.setDate(today.getDate() + dIndex)
                 const dateStr = format(date, 'yyy-MM-dd')
 
-                // const periodStart = new Date(dateStr);
-                // periodStart.setHours(parseInt(startTime.split(':')[0]), parseInt(startTime.split(':')[1]), 0, 0);
                 const periodStart = moment.tz(dateStr + ' ' + startTime, 'YYYY-MM-DD HH:mm', 'Asia/Tokyo').toDate();
-
-                // const periodEnd = new Date(dateStr);
-                // periodEnd.setHours(parseInt(endTime.split(':')[0]), parseInt(endTime.split(':')[1]), 0, 0);
                 const periodEnd = moment.tz(dateStr + ' ' + endTime, 'YYYY-MM-DD HH:mm', 'Asia/Tokyo').toDate();
                 // console.log(periodStart, periodEnd);
 

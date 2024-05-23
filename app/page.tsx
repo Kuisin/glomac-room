@@ -360,25 +360,29 @@ export default function Home() {
               {showList ? (
                 <>
                   <div className="p-1.5 my-2.5 text-base">
-                    {lang === "ja"
-                      ? "リスト表示"
-                      : lang === "en"
-                      ? "List View"
-                      : ""}
+                    <div className="flex flex-row gap-4">
+                      <div>
+                        {lang === "ja"
+                          ? "リスト表示"
+                          : lang === "en"
+                          ? "List View"
+                          : ""}
+                      </div>
+                      {(() => {
+                        const { dateStr, timeStr } = toDT(
+                          selectedDay,
+                          selectedPeriod
+                        );
+                        return (
+                          <div>
+                            {format(new Date(dateStr), "yyyy/MM/dd") +
+                              " " +
+                              timeStr}
+                          </div>
+                        );
+                      })()}
+                    </div>
                   </div>
-                    {(() => {
-                      const { dateStr, timeStr } = toDT(
-                        selectedDay,
-                        selectedPeriod
-                      );
-                      return (
-                        <div>
-                          {format(new Date(dateStr), "yyyy/MM/dd") +
-                            " " +
-                            timeStr}
-                        </div>
-                      );
-                    })()}
                   <button
                     className="flex items-center"
                     onClick={() => {
@@ -520,8 +524,10 @@ export default function Home() {
               </div>
             )}
           </div>
-          <div className="mt-1 mb-4 text-center text-xs">Developed by Kaisei</div>
+          <div className="mt-1 mb-4 text-center text-xs">
+            Developed by Kaisei
           </div>
+        </div>
       </footer>
     </div>
   );

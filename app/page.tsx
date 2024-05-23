@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { format } from 'date-fns';
+import { format } from "date-fns";
 // update
 
 type RoomProps = {
@@ -171,6 +171,17 @@ const periods = [
   ["夜", "N"],
 ];
 
+const periodTimes = [
+  ["1", "9:00", "10:40"],
+  ["2", "10:50", "12:30"],
+  ["LUNCH", "12:30", "13:20"],
+  ["3", "13:20", "15:00"],
+  ["4", "15:10", "16:50"],
+  ["5", "17:00", "18:40"],
+  ["6", "19:50", "20:30"],
+  ["NIGHT", "20:30", "22:30"],
+];
+
 const Room = ({ name, open }: RoomProps) => {
   return (
     <button
@@ -209,9 +220,7 @@ const Floors = ({
   periodNo: number;
   availability: any;
 }) => {
-  const date = new Date();
-  date.setDate(date.getDate() + ((day + 8 - date.getDay()) % 7));
-  const dateStr = format(date, "yyy-MM-dd");
+  const { dateStr, timeStr } = toDT(day, periodNo);
   const currentSelection = availability[dateStr][periodNo];
   // console.log(availability);
   console.log(dateStr);
@@ -235,6 +244,14 @@ const Floors = ({
       })}
     </>
   );
+};
+
+const toDT = (day: number, period: number) => {
+  const date = new Date();
+  date.setDate(date.getDate() + ((day + 8 - date.getDay()) % 7));
+  const dateStr = format(date, "yyy-MM-dd");
+  const timeStr = periodTimes[period][1] + "-" + periodTimes[period][2];
+  return { dateStr, timeStr };
 };
 
 export default function Home() {
@@ -274,7 +291,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-    const todayStr = format(new Date(),"yyy-MM-dd");
+    const todayStr = format(new Date(), "yyy-MM-dd");
     console.log(todayStr);
 
     fetch("/api/getOpenByPeriods", {
@@ -324,13 +341,6 @@ export default function Home() {
         <div className="bg-gray-50 w-full flex flex-col items-center">
           <div className="p-4 w-md max-w-full overflow-x-auto">
             <div className="flex flex-col gap-3 text-sm w-max">
-              {/* <div>{JSON.stringify(availability)}</div> */}
-              {/* <div>{JSON.stringify(rooms)}</div> */}
-              {/* <Floor floor="2" rooms={sampleData} />
-              <Floor floor="3" rooms={sampleData} />
-              <Floor floor="4" rooms={sampleData} />
-              <Floor floor="5" rooms={sampleData} />
-              <Floor floor="6" rooms={sampleData} /> */}
               {!isLoading && (
                 <Floors
                   day={selectedDay}
@@ -346,7 +356,7 @@ export default function Home() {
       <footer className="flex justify-center sticky bottom-0 left-0 ">
         <div className="w-full max-w-lg">
           <div className="z-50 w-full bg-white p-2 rounded-lg shadow-reverse-y">
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
               {showList ? (
                 <>
                   <div className="p-1.5 my-2.5 text-base">
@@ -356,6 +366,19 @@ export default function Home() {
                       ? "List View"
                       : ""}
                   </div>
+                    {(() => {
+                      const { dateStr, timeStr } = toDT(
+                        selectedDay,
+                        selectedPeriod
+                      );
+                      return (
+                        <div>
+                          {format(new Date(dateStr), "yyyy/MM/dd") +
+                            " " +
+                            timeStr}
+                        </div>
+                      );
+                    })()}
                   <button
                     className="flex items-center"
                     onClick={() => {
@@ -497,7 +520,8 @@ export default function Home() {
               </div>
             )}
           </div>
-        </div>
+          <div className="mt-1 mb-4 text-center text-xs">Developed by Kaisei</div>
+          </div>
       </footer>
     </div>
   );

@@ -69,7 +69,7 @@ const Footer = ({ lang }: { lang: string }) => {
       {/* <h2 className="font-semibold">凡例</h2> */}
       <div className="flex mb-4 justify-center gap-2 px-8">
         <div className="flex flex-wrap place-content-center mx-4 gap-x-4 gap-y-2">
-          <div className="text-sm bg-green-200 text-green-800 px-2 py-2 rounded shadow">
+          <div className={`text-sm px-2 py-2 rounded shadow ${openUi}`}>
             F000
           </div>
           <a className="my-auto">
@@ -78,7 +78,7 @@ const Footer = ({ lang }: { lang: string }) => {
           </a>
         </div>
         <div className="flex flex-wrap place-content-center mx-4 gap-x-4 gap-y-2">
-          <div className="text-sm bg-gray-200 text-gray-800 px-2 py-2 rounded shadow">
+          <div className={`text-sm px-2 py-2 rounded shadow ${closedUi}`}>
             F000
           </div>
           <div className="my-auto">
@@ -141,7 +141,7 @@ const FooterButton = ({
   return (
     <button
       className={`py-2 rounded ${
-        selected ? "px-1 bg-green-200" : "px-0.5 hover:bg-gray-200"
+        selected ? `px-1 ${openUi}` : "px-0.5 hover:bg-gray-200"
       }`}
       onClick={action}
     >
@@ -393,8 +393,8 @@ export default function Home() {
               {showList ? (
                 <>
                   <div className="p-1.5 my-2.5 text-base">
-                    <div className="flex flex-row gap-4">
-                      <div>
+                    <div className="flex flex-row gap-6">
+                      <div className="font-semibold">
                         {lang === "ja"
                           ? "リスト表示"
                           : lang === "en"
@@ -540,7 +540,7 @@ export default function Home() {
                       key={`${dIndex}-${pIndex}`}
                       className={`p-0.5 rounded ${
                         selectedDay == dIndex && selectedPeriod == pIndex
-                          ? "bg-green-200"
+                          ? openUi
                           : "hover:bg-gray-200"
                       }`}
                       onClick={() => {

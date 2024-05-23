@@ -37,7 +37,7 @@ export async function POST(req: Request) {
                 where: {
                     universityId: university.id,
                     facilityId: facility.id,
-                    name: row.room
+                    name: row.room.trim()
                 },
             });
             if (!room) {

@@ -277,6 +277,7 @@ export default function CourseReservations() {
                     startTime: row.startTime,
                     endTime: row.endTime,
                     user: row.user,
+                    status: 'CONFIRMED'
                 };
             });
             if (csvData.some(item => item.error)) {

@@ -171,54 +171,55 @@ const periods = [
   ["夜", "NGT"],
 ];
 
-
 const periodTimes = [
   {
-      name: 'P1',
-      startTime: '09:00',
-      endTime: '10:40',
+    name: "P1",
+    startTime: "09:00",
+    endTime: "10:40",
   },
   {
-      name: 'P2',
-      startTime: '10:50',
-      endTime: '12:30',
+    name: "P2",
+    startTime: "10:50",
+    endTime: "12:30",
   },
   {
-      name: 'LUNCH',
-      startTime: '12:30',
-      endTime: '13:20',
+    name: "LUNCH",
+    startTime: "12:30",
+    endTime: "13:20",
   },
   {
-      name: 'P3',
-      startTime: '13:20',
-      endTime: '15:00',
+    name: "P3",
+    startTime: "13:20",
+    endTime: "15:00",
   },
   {
-      name: 'P4',
-      startTime: '15:10',
-      endTime: '16:50',
+    name: "P4",
+    startTime: "15:10",
+    endTime: "16:50",
   },
   {
-      name: 'P5',
-      startTime: '17:00',
-      endTime: '18:40',
+    name: "P5",
+    startTime: "17:00",
+    endTime: "18:40",
   },
   {
-      name: 'P6',
-      startTime: '18:50',
-      endTime: '20:30',
+    name: "P6",
+    startTime: "18:50",
+    endTime: "20:30",
   },
   {
-      name: 'EVENING',
-      startTime: '20:30',
-      endTime: '22:30',
+    name: "EVENING",
+    startTime: "20:30",
+    endTime: "22:30",
   },
-]
+];
 
 const Room = ({ name, open }: RoomProps) => {
   return (
     <button
-      className={`w-18 px-2 py-1 rounded shadow ${open ? openUi : closedUi}`}
+      className={`px-2 py-1 rounded shadow min-w-14 ${
+        open ? openUi : closedUi
+      }`}
     >
       <p className="text-sm">{name}</p>
       <p className="text-sm">{open ? "◯" : "Ｘ"}</p>
@@ -261,20 +262,22 @@ const Floors = ({
 
   return (
     <>
-      {Object.keys(currentSelection).map((fKey: string) => {
-        const floorData: any = Object.keys(currentSelection[fKey]).map(
-          (rKey: string) => {
-            const data = {
-              name: rKey,
-              open: currentSelection[fKey][rKey].open,
-            };
-            return data;
-          }
-        );
+      {Object.keys(currentSelection)
+        .sort((a, b) => b.localeCompare(a))
+        .map((fKey: string) => {
+          const floorData: any = Object.keys(currentSelection[fKey])
+            .map((rKey: string) => {
+              const data = {
+                name: rKey,
+                open: currentSelection[fKey][rKey].open,
+              };
+              return data;
+            })
+            .sort((a, b) => a.name.localeCompare(b.name));
 
-        // console.log(day, periodNo, floorData);
-        return <Floor key={fKey} floor={fKey} rooms={floorData} />;
-      })}
+          // console.log(day, periodNo, floorData);
+          return <Floor key={fKey} floor={fKey} rooms={floorData} />;
+        })}
     </>
   );
 };
@@ -283,7 +286,8 @@ const toDT = (day: number, period: number) => {
   const date = new Date();
   date.setDate(date.getDate() + ((day + 8 - date.getDay()) % 7));
   const dateStr = format(date, "yyy-MM-dd");
-  const timeStr = periodTimes[period].startTime + "-" + periodTimes[period].endTime;
+  const timeStr =
+    periodTimes[period].startTime + "-" + periodTimes[period].endTime;
   return { dateStr, timeStr };
 };
 

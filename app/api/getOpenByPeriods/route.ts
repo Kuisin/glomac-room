@@ -82,7 +82,12 @@ const periodTimes: PeriodTime[] = [
 
 const fetchRoomByFacility = async (facilityId: number) => {
     const rooms = await prisma.room.findMany({
-        where: { facilityId },
+        where: {
+            facilityId,
+            NOT: {
+                valid: 'DISABLE',
+              },
+            },
         select: { id: true, floor: true, name: true },
     });
     return rooms;

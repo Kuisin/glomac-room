@@ -46,7 +46,8 @@ export async function POST(req: Request) {
                         universityId: university.id,
                         facilityId: facility.id,
                         floor: 'other',
-                        name: row.room
+                        name: row.room,
+                        valid: 'VIEW',
                     },
                 });
             }

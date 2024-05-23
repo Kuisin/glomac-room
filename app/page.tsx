@@ -504,13 +504,14 @@ export default function Home() {
                 </button>
                 <div className="text-gray-800 mb-2 flex flex-col justify-center">
                   <a>
-                    {`${
+                    {
                       lang === "ja"
                         ? "予約リスト"
                         : lang === "en"
                         ? "Reservation List"
                         : ""
-                    }　@${showPopup}`}
+                    }
+                    { showPopup == "loading" ? '' : `　@${showPopup}`}
                   </a>
                 </div>
                 {showPopup == "loading" ? (

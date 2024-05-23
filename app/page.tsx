@@ -252,6 +252,7 @@ const Room = ({
 }: RoomProps) => {
   const handleClick = (open: boolean) => {
     if (open) return setShowPopup("");
+    setShowPopup("loading");
 
     let resvData: any = [];
     fetch("/api/getResv", {

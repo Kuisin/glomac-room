@@ -478,73 +478,66 @@ export default function Home() {
             </div>
           </div>
           {showPopup != "" && (
-            <div className="relative mx-4 my-4 p-2 max-w-lg border border-gray-400 text-gray-800 rounded">
-              <button
-                className="absolute top-0 right-0 mx-3 my-1 text-lg text-gray-700"
-                onClick={() => setShowPopup("")}
-              >
-                <FontAwesomeIcon icon={faXmark} />
-              </button>
-              <div className="text-gray-800 mb-2 flex flex-col justify-center">
-                <a>
-                  {`${lang === "ja"
-                    ? "予約リスト"
-                    : lang === "en"
-                    ? "Reservation List"
-                    : ""}　@${showPopup}`}
-                </a>
-                {(() => {
-                  const { dateStr, timeStr } = toDT(
-                    selectedDay,
-                    selectedPeriod
-                  );
-                  return (
-                    <a>
-                      {/* [{format(new Date(dateStr), "yyyy/MM/dd")} {timeStr}] */}
-                    </a>
-                  );
-                })()}
+            <>
+              <div className="relative mx-4 my-4 p-2 min-w-64 max-w-lg border border-gray-400 text-gray-800 rounded">
+                <button
+                  className="absolute top-0 right-0 mx-3 my-1 text-lg text-gray-700"
+                  onClick={() => setShowPopup("")}
+                >
+                  <FontAwesomeIcon icon={faXmark} />
+                </button>
+                <div className="text-gray-800 mb-2 flex flex-col justify-center">
+                  <a>
+                    {`${
+                      lang === "ja"
+                        ? "予約リスト"
+                        : lang === "en"
+                        ? "Reservation List"
+                        : ""
+                    }　@${showPopup}`}
+                  </a>
+                </div>
+                {showPopup == "loading" ? (
+                  <div>Loading...</div>
+                ):(
+                  <>
+                    <div className="grid grid-cols-12 gap-4 text-center text-gray-800">
+                      <div className="col-span-3 truncate">
+                        {lang === "ja" ? "種類" : lang === "en" ? "Type" : ""}
+                      </div>
+                      <div className="col-span-2">
+                        {lang === "ja" ? "開始" : lang === "en" ? "Start" : ""}
+                      </div>
+                      <div className="col-span-2">
+                        {lang === "ja" ? "終了" : lang === "en" ? "End" : ""}
+                      </div>
+                      <div className="col-span-5 truncate">
+                        {lang === "ja"
+                          ? "予約名"
+                          : lang === "en"
+                          ? "Title"
+                          : ""}
+                      </div>
+                    </div>
+                    {selectedResv.map((resv) => (
+                      <div
+                        key={resv.id}
+                        className="grid grid-cols-12 gap-4 pb-1 text-center text-gray-600"
+                      >
+                        <div className="col-span-3 truncate">{resv.type}</div>
+                        <div className="col-span-2">
+                          {format(resv.startTime, "H:mm")}
+                        </div>
+                        <div className="col-span-2">
+                          {format(resv.endTime, "H:mm")}
+                        </div>
+                        <div className="col-span-5 truncate">{resv.title}</div>
+                      </div>
+                    ))}
+                  </>
+                )}
               </div>
-              <div
-                  className="grid grid-cols-12 gap-4 text-center text-gray-800"
-                >
-                  <div className="col-span-3 truncate">{lang === "ja"
-                    ? "種類"
-                    : lang === "en"
-                    ? "Type"
-                    : ""}</div>
-                  <div className="col-span-2">{lang === "ja"
-                    ? "開始"
-                    : lang === "en"
-                    ? "Start"
-                    : ""}</div>
-                  <div className="col-span-2">{lang === "ja"
-                    ? "終了"
-                    : lang === "en"
-                    ? "End"
-                    : ""}</div>
-                  <div className="col-span-5 truncate">{lang === "ja"
-                    ? "予約名"
-                    : lang === "en"
-                    ? "Title"
-                    : ""}</div>
-                </div>
-              {selectedResv.map((resv) => (
-                <div
-                  key={resv.id}
-                  className="grid grid-cols-12 gap-4 pb-1 text-center text-gray-600"
-                >
-                  <div className="col-span-3 truncate">{resv.type}</div>
-                  <div className="col-span-2">
-                    {format(resv.startTime, "H:mm")}
-                  </div>
-                  <div className="col-span-2">
-                    {format(resv.endTime, "H:mm")}
-                  </div>
-                  <div className="col-span-5 truncate">{resv.title}</div>
-                </div>
-              ))}
-            </div>
+            </>
           )}
         </div>
         <Footer lang={lang} />
@@ -629,7 +622,10 @@ export default function Home() {
                             : ""
                           ).substring(0, 1)}
                           selected={selectedDay == index}
-                          action={() => {setSelectedDay(index); setShowPopup('')}}
+                          action={() => {
+                            setSelectedDay(index);
+                            setShowPopup("");
+                          }}
                         />
                       ))}
                     </div>
@@ -645,7 +641,10 @@ export default function Home() {
                             : ""
                           ).substring(0, 1)}
                           selected={selectedPeriod == index}
-                          action={() => {setSelectedPeriod(index); setShowPopup('')}}
+                          action={() => {
+                            setSelectedPeriod(index);
+                            setShowPopup("");
+                          }}
                         />
                       ))}
                     </div>
@@ -709,7 +708,7 @@ export default function Home() {
                       onClick={() => {
                         setSelectedPeriod(pIndex);
                         setSelectedDay(dIndex);
-                        setShowPopup('');
+                        setShowPopup("");
                       }}
                     >
                       {dValue[lang === "ja" ? 0 : lang === "en" ? 1 : 0] +

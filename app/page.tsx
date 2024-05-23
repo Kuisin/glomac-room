@@ -168,19 +168,52 @@ const periods = [
   ["4", "4"],
   ["5", "5"],
   ["6", "6"],
-  ["夜", "N"],
+  ["夜", "NGT"],
 ];
 
+
 const periodTimes = [
-  ["1", "9:00", "10:40"],
-  ["2", "10:50", "12:30"],
-  ["LUNCH", "12:30", "13:20"],
-  ["3", "13:20", "15:00"],
-  ["4", "15:10", "16:50"],
-  ["5", "17:00", "18:40"],
-  ["6", "19:50", "20:30"],
-  ["NIGHT", "20:30", "22:30"],
-];
+  {
+      name: 'P1',
+      startTime: '09:00',
+      endTime: '10:40',
+  },
+  {
+      name: 'P2',
+      startTime: '10:50',
+      endTime: '12:30',
+  },
+  {
+      name: 'LUNCH',
+      startTime: '12:30',
+      endTime: '13:20',
+  },
+  {
+      name: 'P3',
+      startTime: '13:20',
+      endTime: '15:00',
+  },
+  {
+      name: 'P4',
+      startTime: '15:10',
+      endTime: '16:50',
+  },
+  {
+      name: 'P5',
+      startTime: '17:00',
+      endTime: '18:40',
+  },
+  {
+      name: 'P6',
+      startTime: '18:50',
+      endTime: '20:30',
+  },
+  {
+      name: 'EVENING',
+      startTime: '20:30',
+      endTime: '22:30',
+  },
+]
 
 const Room = ({ name, open }: RoomProps) => {
   return (
@@ -250,7 +283,7 @@ const toDT = (day: number, period: number) => {
   const date = new Date();
   date.setDate(date.getDate() + ((day + 8 - date.getDay()) % 7));
   const dateStr = format(date, "yyy-MM-dd");
-  const timeStr = periodTimes[period][1] + "-" + periodTimes[period][2];
+  const timeStr = periodTimes[period].startTime + "-" + periodTimes[period].endTime;
   return { dateStr, timeStr };
 };
 

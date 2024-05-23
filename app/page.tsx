@@ -525,7 +525,7 @@ export default function Home() {
             )}
           </div>
           <div className="mt-1 mb-4 text-center text-xs">
-            Developed by Kaisei
+            Developed by Kaisei Sawada
           </div>
         </div>
       </footer>

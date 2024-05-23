@@ -466,7 +466,22 @@ export default function Home() {
         <div className="bg-gray-50 w-full flex flex-col items-center">
           <div className="p-4 w-md max-w-full overflow-x-auto">
             <div className="flex flex-col gap-3 text-sm w-max">
-              {!isLoading && (
+              {isLoading ? (
+                <div className="flex gap-3 w-max">
+                  <a className="animate-pulse bg-gray-200 text-gray-200 px-3 py-4 rounded shadow mr-2">
+                    0
+                  </a>
+                  <button
+                    className={`animate-pulse px-2 py-1 rounded shadow min-w-44 ${closedBg} ${closedText}`}
+                  ></button>
+                  <button
+                    className={`animate-pulse px-2 py-1 rounded shadow min-w-36 ${closedBg} ${closedText}`}
+                  ></button>
+                  <button
+                    className={`animate-pulse px-2 py-1 rounded shadow min-w-24 ${closedBg} ${closedText}`}
+                  ></button>
+                </div>
+              ) : (
                 <Floors
                   day={selectedDay}
                   periodNo={selectedPeriod}
@@ -499,7 +514,7 @@ export default function Home() {
                 </div>
                 {showPopup == "loading" ? (
                   <div>Loading...</div>
-                ):(
+                ) : (
                   <>
                     <div className="grid grid-cols-12 gap-4 text-center text-gray-800">
                       <div className="col-span-3 truncate">

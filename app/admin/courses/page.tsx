@@ -61,6 +61,7 @@ const toDateInputValue = (date: string) => {
     const day = parseInt(date.substring(8, 10), 10);
 
     const parsedDate = new Date(year, month, day);
+    console.log(year, month, day);
     return format(parsedDate, "yyyy-MM-dd");
 };
 
@@ -269,11 +270,9 @@ export default function CourseReservations() {
             const repeatedData = repeatSchedules(csvData);
             const uploadData = repeatedData.map((row) => {
                 return {
-                    universityId: 1,
-                    facilityId: 1,
                     title: row.title,
                     type: row.type || '',
-                    room: row.room,
+                    room: row.room.trim(),
                     startTime: row.startTime,
                     endTime: row.endTime,
                     user: row.user,

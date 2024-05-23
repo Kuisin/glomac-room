@@ -60,6 +60,10 @@ const sampleData = [
 
 const openUi = "bg-green-200 text-green-800";
 const closedUi = "bg-gray-200 text-gray-800";
+const openBg = "bg-green-200";
+const closedBg = "bg-gray-200";
+const openText = "text-green-800";
+const closedText = "text-gray-800";
 
 const feedbackFormUrl = "google.com";
 
@@ -69,7 +73,7 @@ const Footer = ({ lang }: { lang: string }) => {
       {/* <h2 className="font-semibold">凡例</h2> */}
       <div className="flex mb-4 justify-center gap-2 px-8">
         <div className="flex flex-wrap place-content-center mx-4 gap-x-4 gap-y-2">
-          <div className={`text-sm px-2 py-2 rounded shadow ${openUi}`}>
+          <div className={`text-sm px-2 py-2 rounded shadow ${openBg} ${openText}`}>
             F000
           </div>
           <a className="my-auto">
@@ -78,7 +82,7 @@ const Footer = ({ lang }: { lang: string }) => {
           </a>
         </div>
         <div className="flex flex-wrap place-content-center mx-4 gap-x-4 gap-y-2">
-          <div className={`text-sm px-2 py-2 rounded shadow ${closedUi}`}>
+          <div className={`text-sm px-2 py-2 rounded shadow ${closedBg} ${closedText}`}>
             F000
           </div>
           <div className="my-auto">
@@ -141,7 +145,7 @@ const FooterButton = ({
   return (
     <button
       className={`py-2 rounded ${
-        selected ? `px-1 ${openUi}` : "px-0.5 hover:bg-gray-200"
+        selected ? `px-1 ${openBg}` : "px-0.5 hover:bg-gray-200"
       }`}
       onClick={action}
     >
@@ -218,7 +222,7 @@ const Room = ({ name, open }: RoomProps) => {
   return (
     <button
       className={`px-2 py-1 rounded shadow min-w-14 ${
-        open ? openUi : closedUi
+        open ? `${openBg} ${openText}` : `${closedBg} ${closedText}`
       }`}
     >
       <p className="text-sm">{name}</p>
@@ -544,7 +548,7 @@ export default function Home() {
                       key={`${dIndex}-${pIndex}`}
                       className={`p-0.5 rounded ${
                         selectedDay == dIndex && selectedPeriod == pIndex
-                          ? openUi
+                          ? openBg
                           : "hover:bg-gray-200"
                       }`}
                       onClick={() => {

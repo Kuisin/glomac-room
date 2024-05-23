@@ -22,6 +22,8 @@ export async function POST(req: Request) {
             throw new Error('unknown university and/or facility');
         }
 
+        console.log(university.id, facility.id);
+
         const reservations = [];
         for (const row of data) {
             if (!row.title || !row.room || !row.startTime || !row.endTime) {
@@ -46,7 +48,7 @@ export async function POST(req: Request) {
                         universityId: university.id,
                         facilityId: facility.id,
                         floor: 'other',
-                        name: row.room,
+                        name: row.room.trim(),
                         valid: 'VIEW',
                     },
                 });

@@ -7,7 +7,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const accessKey = 'glomac-mana';
-  const [permission, setPermission] = useState<boolean>(true);
+  const [permission, setPermission] = useState<boolean>(false);
   const [password, setPassword] = useState<string>('')
 
   const checkPassword = (event: React.FormEvent) => {

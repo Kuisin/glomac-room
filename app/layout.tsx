@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Facility Reservation",
-  description: "Made by Kaisei",
+  title: "Facility Reservation (GLOMAC)",
+  description: "Made by Kaisei Sawada",
 };
 
 export default function RootLayout({

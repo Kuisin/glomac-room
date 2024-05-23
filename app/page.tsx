@@ -1,12 +1,33 @@
 "use client";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
-// update
 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { config } from "@fortawesome/fontawesome-svg-core";
+import "@fortawesome/fontawesome-svg-core/styles.css";
+config.autoAddCss = false;
+import { library } from "@fortawesome/fontawesome-svg-core";
+import {
+  faCalendarDays,
+  faHouse,
+  faRepeat,
+  faXmark,
+  fas,
+} from "@fortawesome/free-solid-svg-icons";
+library.add(fas);
+
+// type RoomProps = {
+//   floor?: string;
+//   name: string;
+//   open: boolean;
+// };
 type RoomProps = {
   floor?: string;
   name: string;
   open: boolean;
+  setSelectedResvs: (reservationIds: any) => void;
+  setShowPopup: (show: string) => void;
+  reservationIds: any; // Adjust the type as needed
 };
 
 type FloorProps = {
@@ -73,7 +94,9 @@ const Footer = ({ lang }: { lang: string }) => {
       {/* <h2 className="font-semibold">凡例</h2> */}
       <div className="flex mb-4 justify-center gap-2 px-8">
         <div className="flex flex-wrap place-content-center mx-4 gap-x-4 gap-y-2">
-          <div className={`text-sm px-2 py-2 rounded shadow ${openBg} ${openText}`}>
+          <div
+            className={`text-sm px-2 py-2 rounded shadow ${openBg} ${openText}`}
+          >
             F000
           </div>
           <a className="my-auto">
@@ -82,7 +105,9 @@ const Footer = ({ lang }: { lang: string }) => {
           </a>
         </div>
         <div className="flex flex-wrap place-content-center mx-4 gap-x-4 gap-y-2">
-          <div className={`text-sm px-2 py-2 rounded shadow ${closedBg} ${closedText}`}>
+          <div
+            className={`text-sm px-2 py-2 rounded shadow ${closedBg} ${closedText}`}
+          >
             F000
           </div>
           <div className="my-auto">
@@ -218,12 +243,42 @@ const periodTimes = [
   },
 ];
 
-const Room = ({ name, open }: RoomProps) => {
+const Room = ({
+  name,
+  open,
+  setSelectedResvs,
+  setShowPopup,
+  reservationIds,
+}: RoomProps) => {
+  const handleClick = (open: boolean) => {
+    if (open) return setShowPopup("");
+
+    let resvData: any = [];
+    fetch("/api/getResv", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ reservationIds }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.ok) {
+          resvData = data.reservations;
+          setSelectedResvs(resvData);
+          setShowPopup(name);
+        }
+
+        console.log(data);
+      });
+  };
+
   return (
     <button
       className={`px-2 py-1 rounded shadow min-w-14 ${
         open ? `${openBg} ${openText}` : `${closedBg} ${closedText}`
       }`}
+      onClick={() => handleClick(open)}
     >
       <p className="text-sm">{name}</p>
       <p className="text-sm">{open ? "◯" : "Ｘ"}</p>
@@ -243,6 +298,9 @@ const Floor = ({ floor, rooms }: FloorProps) => {
           floor={floor}
           name={room.name}
           open={room.open}
+          setSelectedResvs={room.setSelectedResvs}
+          setShowPopup={room.setShowPopup}
+          reservationIds={room.reservationIds}
         />
       ))}
     </div>
@@ -253,16 +311,17 @@ const Floors = ({
   day,
   periodNo,
   availability,
+  setSelectedResvs,
+  setShowPopup,
 }: {
   day: number;
   periodNo: number;
   availability: any;
+  setSelectedResvs: (reservationIds: any) => void;
+  setShowPopup: (show: string) => void;
 }) => {
   const { dateStr, timeStr } = toDT(day, periodNo);
   const currentSelection = availability[dateStr][periodNo];
-  // console.log(availability);
-  console.log(dateStr);
-  console.log(availability);
 
   return (
     <>
@@ -272,15 +331,17 @@ const Floors = ({
           const floorData: any = Object.keys(currentSelection[fKey])
             .map((rKey: string) => {
               const data = {
-                name: rKey,
+                name: rKey.trim(),
                 open: currentSelection[fKey][rKey].open,
+                reservationIds: currentSelection[fKey][rKey].reservationIds,
+                setSelectedResvs,
+                setShowPopup,
               };
               return data;
             })
-            .sort((a, b) => a.name.localeCompare(b.name));
+            .sort((a, b) => b.name.localeCompare(a.name));
 
-          // console.log(day, periodNo, floorData);
-          return <Floor key={fKey} floor={fKey} rooms={floorData} />;
+          return <Floor key={fKey} floor={fKey.trim()} rooms={floorData} />;
         })}
     </>
   );
@@ -311,7 +372,30 @@ export default function Home() {
 
   const [language, setLanguage] = useState<Language>(languages[0]);
   const [lang, setLang] = useState<string>(languages[0].id);
+
   const [showList, setShowList] = useState<boolean>(false);
+  const [showPopup, setShowPopup] = useState<string>("");
+  const [selectedResv, setSelectedResvs] = useState<any[]>([
+    {
+      title: "Test",
+      startTime: "2024-05-24 09:00",
+      endTime: "2024-05-24 10:40",
+      type: "COURSE",
+    },
+    {
+      title: "THis is a test Schedule",
+      startTime: "2024-05-24 09:00",
+      endTime: "2024-05-24 10:40",
+      type: "COURSE",
+    },
+    {
+      title: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      startTime: "2024-05-24 09:00",
+      endTime: "2024-05-24 10:40",
+      type: "COURSE",
+    },
+  ]);
+
   const [selectedDay, setSelectedDay] = useState<number>(0);
   const [selectedPeriod, setSelectedPeriod] = useState<number>(0);
 
@@ -333,7 +417,7 @@ export default function Home() {
 
   useEffect(() => {
     const todayStr = format(new Date(), "yyy-MM-dd");
-    console.log(todayStr);
+    // console.log(todayStr);
 
     fetch("/api/getOpenByPeriods", {
       method: "POST",
@@ -387,10 +471,81 @@ export default function Home() {
                   day={selectedDay}
                   periodNo={selectedPeriod}
                   availability={availability}
+                  setSelectedResvs={setSelectedResvs}
+                  setShowPopup={setShowPopup}
                 />
               )}
             </div>
           </div>
+          {showPopup != "" && (
+            <div className="relative mx-4 my-4 p-2 max-w-lg border border-gray-400 text-gray-800 rounded">
+              <button
+                className="absolute top-0 right-0 mx-3 my-1 text-lg text-gray-700"
+                onClick={() => setShowPopup("")}
+              >
+                <FontAwesomeIcon icon={faXmark} />
+              </button>
+              <div className="text-gray-800 mb-2 flex flex-col justify-center">
+                <a>
+                  {`${lang === "ja"
+                    ? "予約リスト"
+                    : lang === "en"
+                    ? "Reservation List"
+                    : ""}　@${showPopup}`}
+                </a>
+                {(() => {
+                  const { dateStr, timeStr } = toDT(
+                    selectedDay,
+                    selectedPeriod
+                  );
+                  return (
+                    <a>
+                      {/* [{format(new Date(dateStr), "yyyy/MM/dd")} {timeStr}] */}
+                    </a>
+                  );
+                })()}
+              </div>
+              <div
+                  className="grid grid-cols-12 gap-4 text-center text-gray-800"
+                >
+                  <div className="col-span-3 truncate">{lang === "ja"
+                    ? "種類"
+                    : lang === "en"
+                    ? "Type"
+                    : ""}</div>
+                  <div className="col-span-2">{lang === "ja"
+                    ? "開始"
+                    : lang === "en"
+                    ? "Start"
+                    : ""}</div>
+                  <div className="col-span-2">{lang === "ja"
+                    ? "終了"
+                    : lang === "en"
+                    ? "End"
+                    : ""}</div>
+                  <div className="col-span-5 truncate">{lang === "ja"
+                    ? "予約名"
+                    : lang === "en"
+                    ? "Title"
+                    : ""}</div>
+                </div>
+              {selectedResv.map((resv) => (
+                <div
+                  key={resv.id}
+                  className="grid grid-cols-12 gap-4 pb-1 text-center text-gray-600"
+                >
+                  <div className="col-span-3 truncate">{resv.type}</div>
+                  <div className="col-span-2">
+                    {format(resv.startTime, "H:mm")}
+                  </div>
+                  <div className="col-span-2">
+                    {format(resv.endTime, "H:mm")}
+                  </div>
+                  <div className="col-span-5 truncate">{resv.title}</div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <Footer lang={lang} />
       </main>
@@ -474,7 +629,7 @@ export default function Home() {
                             : ""
                           ).substring(0, 1)}
                           selected={selectedDay == index}
-                          action={() => setSelectedDay(index)}
+                          action={() => {setSelectedDay(index); setShowPopup('')}}
                         />
                       ))}
                     </div>
@@ -490,7 +645,7 @@ export default function Home() {
                             : ""
                           ).substring(0, 1)}
                           selected={selectedPeriod == index}
-                          action={() => setSelectedPeriod(index)}
+                          action={() => {setSelectedPeriod(index); setShowPopup('')}}
                         />
                       ))}
                     </div>
@@ -554,6 +709,7 @@ export default function Home() {
                       onClick={() => {
                         setSelectedPeriod(pIndex);
                         setSelectedDay(dIndex);
+                        setShowPopup('');
                       }}
                     >
                       {dValue[lang === "ja" ? 0 : lang === "en" ? 1 : 0] +

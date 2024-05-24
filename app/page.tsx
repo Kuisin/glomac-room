@@ -90,7 +90,7 @@ const closedText = "text-gray-800";
 
 const feedbackFormUrl = "google.com";
 
-const Footer = ({ lang }: { lang: string }) => {
+const Description = ({ lang }: { lang: string }) => {
   return (
     <div className="py-6">
       {/* <h2 className="font-semibold">凡例</h2> */}
@@ -611,7 +611,7 @@ export default function Home() {
             </>
           )}
         </div>
-        <Footer lang={lang} />
+        <Description lang={lang} />
       </main>
       <footer className="flex justify-center sticky bottom-0 left-0 ">
         <div className="w-full max-w-lg">
@@ -790,9 +790,9 @@ export default function Home() {
                 )}
               </div>
             )}
-          </div>
-          <div className="mt-1 mb-4 text-center text-xs">
-            Developed by Kaisei Sawada
+            <div className="mt-3 mb-2 text-center text-xs">
+              Developed by Kaisei Sawada
+            </div>
           </div>
         </div>
       </footer>

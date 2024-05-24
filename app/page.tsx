@@ -555,7 +555,7 @@ export default function Home() {
                     {showPopup == "loading" ? "" : `　@${showPopup}`}
                   </a>
                 </div>
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 mx-3">
                   <div className="grid grid-cols-12 gap-4  text-center text-gray-800">
                     <div className="col-span-3 truncate">
                       {lang === "ja" ? "種類" : lang === "en" ? "Type" : ""}
@@ -571,7 +571,7 @@ export default function Home() {
                     </div>
                   </div>
                   {showPopup == "loading" ? (
-                    <div className="grid grid-cols-12 gap-4 text-center text-gray-600">
+                    <div className="grid grid-cols-12 gap-4 text-left text-gray-600">
                       <div
                         className={`col-span-3 animate-pulse truncate rounded h-3 w-full ${closedBg}`}
                       ></div>
@@ -590,7 +590,7 @@ export default function Home() {
                       {selectedResv.map((resv) => (
                         <div
                           key={resv.id}
-                          className="grid grid-cols-12 gap-4 pb-1 text-center text-gray-600"
+                          className="grid grid-cols-12 gap-4 pb-1 text-left text-gray-600"
                         >
                           <div className="col-span-3 truncate">{resv.type}</div>
                           <div className="col-span-2">

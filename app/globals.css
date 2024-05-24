@@ -4,22 +4,12 @@
 
 :root {
   --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 256, 256, 256;
-  --background-end-rgb: 256, 256, 256;
-}
-
-.ios-web-app footer {
-  padding-bottom: 20px; /* Adjust this value as needed */
+  --background-rgb: 256, 256, 256;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: rgb(var(--background-rgb));
 }
 
 @layer utilities {

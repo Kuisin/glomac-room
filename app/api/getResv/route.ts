@@ -22,7 +22,7 @@ export async function POST(req: Request) {
         const { reservationIds } = data;
 
         const reservations = await fetchRoomByFacility(reservationIds);
-        console.log(reservationIds, reservations);
+        console.log(reservations);
 
         return NextResponse.json({ ok: true, reservations }, { status: 200 });
     } catch (err) {

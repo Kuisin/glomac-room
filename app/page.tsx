@@ -221,7 +221,7 @@ const periodTimes = [
 const Room = ({ name, open }: RoomProps) => {
   return (
     <button
-      className={`px-2 py-1 rounded shadow min-w-14 ${
+      className={`px-2 py-1 rounded shadow min-w-14 cursor-default ${
         open ? `${openBg} ${openText}` : `${closedBg} ${closedText}`
       }`}
     >

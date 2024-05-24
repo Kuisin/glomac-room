@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import Head from "next/head";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,26 +24,10 @@ export default function RootLayout({
         />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-        <link
-          rel="apple-touch-icon"
-          sizes="57x57"
-          href="/ios-files/57.png"
-        />
-        <link
-          rel="apple-touch-icon"
-          sizes="60x60"
-          href="/ios-files/60.png"
-        />
-        <link
-          rel="apple-touch-icon"
-          sizes="72x72"
-          href="/ios-files/72.png"
-        />
-        <link
-          rel="apple-touch-icon"
-          sizes="76x76"
-          href="/ios-files/76.png"
-        />
+        <link rel="apple-touch-icon" sizes="57x57" href="/ios-files/57.png" />
+        <link rel="apple-touch-icon" sizes="60x60" href="/ios-files/60.png" />
+        <link rel="apple-touch-icon" sizes="72x72" href="/ios-files/72.png" />
+        <link rel="apple-touch-icon" sizes="76x76" href="/ios-files/76.png" />
         <link
           rel="apple-touch-icon"
           sizes="114x114"

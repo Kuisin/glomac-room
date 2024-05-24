@@ -1,0 +1,8 @@
+-- AlterTable
+ALTER TABLE "Facility" ALTER COLUMN "area" DROP NOT NULL,
+ALTER COLUMN "description" DROP NOT NULL;
+
+-- AlterTable
+ALTER TABLE "Room" ALTER COLUMN "capacity" DROP NOT NULL,
+ALTER COLUMN "location" DROP NOT NULL,
+ALTER COLUMN "description" DROP NOT NULL;

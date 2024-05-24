@@ -1,0 +1,173 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// npx prisma generate
+// npx prisma migrate dev --name update-database
+
+enum ResvStatus {
+  PRE_REQUEST
+  PENDING
+  CONFIRMED
+  CANCELLED
+  UPDATED
+  COMPLETED
+}
+
+enum ResvType {
+  COURSE
+  FORCE
+  USER
+}
+
+enum RoomValid {
+  DISABLE
+  VIEW
+  ALLOW
+}
+
+enum UserRole {
+  STUDENT
+  TEACHER
+  OFFICE
+  ADMIN
+}
+
+enum DayOfWeek {
+  MON
+  TUE
+  WED
+  THU
+  FRI
+  SAT
+  SUN
+}
+
+enum ClassPeriod {
+  PERIOD_1
+  PERIOD_2
+  LUNCH
+  PERIOD_3
+  PERIOD_4
+  PERIOD_5
+  PERIOD_6
+  EVENING
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Resv {
+  id          Int        @id @default(autoincrement())
+  timestamp   DateTime   @default(now())
+  status      ResvStatus @default(PENDING)
+  title       String     @default("unknown")
+  group       String?    @default("none")
+  type        ResvType     @default(USER)
+  roomId      Int
+  startTime   DateTime
+  endTime     DateTime
+  description String?
+  userId      Int?
+
+  room Room  @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+  @@index([userId])
+  @@index([startTime])
+  @@index([endTime])
+}
+
+model University {
+  id          Int     @id @default(autoincrement())
+  name        String
+  ownerId     Int
+  description String?
+
+  owner      User             @relation("OwnerRelation", fields: [ownerId], references: [id])
+  areas      Area[]
+  Facilities Facility[]
+  rooms      Room[]
+  users      UserUniversity[]
+}
+
+model Area {
+  id           Int     @id @default(autoincrement())
+  universityId Int
+  name         String
+  description  String?
+
+  universties University @relation(fields: [universityId], references: [id])
+  facilities  Facility[]
+
+  @@index([universityId])
+}
+
+model Facility {
+  id           Int      @id @default(autoincrement())
+  universityId Int
+  areaId       Int?
+  name         String
+  floors       String[]
+  description  String?
+
+  areas        Area?       @relation(fields: [areaId], references: [id])
+  rooms        Room[]
+  Universities University? @relation(fields: [universityId], references: [id])
+
+  @@index([universityId])
+  @@index([areaId])
+}
+
+model Room {
+  id           Int       @id @default(autoincrement())
+  universityId Int
+  facilityId   Int
+  floor        String
+  name         String
+  capacity     Int?
+  location     String?
+  description  String?
+  valid        RoomValid @default(DISABLE)
+
+  facility     Facility   @relation(fields: [facilityId], references: [id])
+  resv         Resv[]
+  universities University @relation(fields: [universityId], references: [id])
+
+  @@index([universityId])
+  @@index([facilityId])
+}
+
+model User {
+  id           Int              @id @default(autoincrement())
+  universities UserUniversity[]
+  role         String
+  studentId    String?
+  email        String?
+  lastName     String
+  firstName    String
+  displayName  String
+  showProfile  Boolean          @default(false)
+  valid        Boolean          @default(false)
+
+  ownerUniversity University[] @relation("OwnerRelation")
+  reservations    Resv[]
+}
+
+model UserUniversity {
+  userId       Int
+  universityId Int
+  user         User       @relation(fields: [userId], references: [id])
+  university   University @relation(fields: [universityId], references: [id])
+
+  @@id([userId, universityId])
+}

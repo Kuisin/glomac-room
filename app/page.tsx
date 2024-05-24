@@ -73,7 +73,9 @@ const Footer = ({ lang }: { lang: string }) => {
       {/* <h2 className="font-semibold">凡例</h2> */}
       <div className="flex mb-4 justify-center gap-2 px-8">
         <div className="flex flex-wrap place-content-center mx-4 gap-x-4 gap-y-2">
-          <div className={`text-sm px-2 py-2 rounded shadow ${openBg} ${openText}`}>
+          <div
+            className={`text-sm px-2 py-2 rounded shadow ${openBg} ${openText}`}
+          >
             F000
           </div>
           <a className="my-auto">
@@ -82,7 +84,9 @@ const Footer = ({ lang }: { lang: string }) => {
           </a>
         </div>
         <div className="flex flex-wrap place-content-center mx-4 gap-x-4 gap-y-2">
-          <div className={`text-sm px-2 py-2 rounded shadow ${closedBg} ${closedText}`}>
+          <div
+            className={`text-sm px-2 py-2 rounded shadow ${closedBg} ${closedText}`}
+          >
             F000
           </div>
           <div className="my-auto">
@@ -382,7 +386,22 @@ export default function Home() {
         <div className="bg-gray-50 w-full flex flex-col items-center">
           <div className="p-4 w-md max-w-full overflow-x-auto">
             <div className="flex flex-col gap-3 text-sm w-max">
-              {!isLoading && (
+              {isLoading ? (
+                <div className="flex gap-3 w-max">
+                  <a className="cursor-default animate-pulse bg-gray-200 text-gray-200 px-3 py-4 rounded shadow mr-2">
+                    0
+                  </a>
+                  <button
+                    className={`cursor-default animate-pulse px-2 py-1 rounded shadow min-w-44 ${closedBg} ${closedText}`}
+                  ></button>
+                  <button
+                    className={`cursor-default animate-pulse px-2 py-1 rounded shadow min-w-36 ${closedBg} ${closedText}`}
+                  ></button>
+                  <button
+                    className={`cursor-default animate-pulse px-2 py-1 rounded shadow min-w-24 ${closedBg} ${closedText}`}
+                  ></button>
+                </div>
+              ) : (
                 <Floors
                   day={selectedDay}
                   periodNo={selectedPeriod}
@@ -564,9 +583,9 @@ export default function Home() {
                 )}
               </div>
             )}
-          </div>
-          <div className="mt-1 mb-4 text-center text-xs">
-            Developed by Kaisei Sawada
+            <div className="mt-4 mb-2 text-center text-xs">
+              Developed by Kaisei Sawada
+            </div>
           </div>
         </div>
       </footer>

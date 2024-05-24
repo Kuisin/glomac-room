@@ -33,6 +33,8 @@ type RoomProps = {
 type FloorProps = {
   floor: string;
   rooms: RoomProps[];
+  setSelectedResvs: (reservationIds: any) => void;
+  setShowPopup: (show: string) => void;
 };
 
 type Language = {
@@ -277,7 +279,9 @@ const Room = ({
   return (
     <button
       className={`px-2 py-1 rounded shadow min-w-14 ${
-        open ? `cursor-default ${openBg} ${openText}` : `${closedBg} ${closedText}`
+        open
+          ? `cursor-default ${openBg} ${openText}`
+          : `${closedBg} ${closedText}`
       }`}
       onClick={() => handleClick(open)}
     >
@@ -287,10 +291,40 @@ const Room = ({
   );
 };
 
-const Floor = ({ floor, rooms }: FloorProps) => {
+const Floor = ({
+  floor,
+  rooms,
+  setSelectedResvs,
+  setShowPopup,
+}: FloorProps) => {
+  const handleFloorClick = () => {
+    setShowPopup("loading");
+
+    let floorReservationIds = rooms.flatMap((room) => room.reservationIds);
+
+    fetch("/api/getResv", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ reservationIds: floorReservationIds }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.ok) {
+          setSelectedResvs(data.reservations);
+          setShowPopup(`Floor ${floor}`);
+        }
+        console.log(data);
+      });
+  };
+
   return (
     <div id={`floor-${floor}`} className="flex gap-3 w-max">
-      <a className="bg-gray-200 text-gray-800 px-3 py-4 rounded shadow mr-2">
+      <a
+        className="bg-gray-200 text-gray-800 px-3 py-4 rounded shadow mr-2"
+        onClick={handleFloorClick}
+      >
         {floor}
       </a>
       {rooms.map((room: RoomProps) => (
@@ -342,7 +376,15 @@ const Floors = ({
             })
             .sort((a, b) => b.name.localeCompare(a.name));
 
-          return <Floor key={fKey} floor={fKey.trim()} rooms={floorData} />;
+          return (
+            <Floor
+              key={fKey}
+              floor={fKey.trim()}
+              rooms={floorData}
+              setSelectedResvs={setSelectedResvs}
+              setShowPopup={setShowPopup}
+            />
+          );
         })}
     </>
   );
@@ -469,17 +511,17 @@ export default function Home() {
             <div className="flex flex-col gap-3 text-sm w-max">
               {isLoading ? (
                 <div className="flex gap-3 w-max">
-                  <a className="animate-pulse bg-gray-200 text-gray-200 px-3 py-4 rounded shadow mr-2">
+                  <a className="cursor-default animate-pulse bg-gray-200 text-gray-200 px-3 py-4 rounded shadow mr-2">
                     0
                   </a>
                   <button
-                    className={`animate-pulse px-2 py-1 rounded shadow min-w-44 ${closedBg} ${closedText}`}
+                    className={`cursor-default animate-pulse px-2 py-1 rounded shadow min-w-44 ${closedBg} ${closedText}`}
                   ></button>
                   <button
-                    className={`animate-pulse px-2 py-1 rounded shadow min-w-36 ${closedBg} ${closedText}`}
+                    className={`cursor-default animate-pulse px-2 py-1 rounded shadow min-w-36 ${closedBg} ${closedText}`}
                   ></button>
                   <button
-                    className={`animate-pulse px-2 py-1 rounded shadow min-w-24 ${closedBg} ${closedText}`}
+                    className={`cursor-default animate-pulse px-2 py-1 rounded shadow min-w-24 ${closedBg} ${closedText}`}
                   ></button>
                 </div>
               ) : (
@@ -493,6 +535,7 @@ export default function Home() {
               )}
             </div>
           </div>
+
           {showPopup != "" && (
             <>
               <div className="relative mx-4 my-4 p-2 min-w-64 max-w-lg border border-gray-400 text-gray-800 rounded">
@@ -504,55 +547,66 @@ export default function Home() {
                 </button>
                 <div className="text-gray-800 mb-2 flex flex-col justify-center">
                   <a>
-                    {
-                      lang === "ja"
-                        ? "予約リスト"
-                        : lang === "en"
-                        ? "Reservation List"
-                        : ""
-                    }
-                    { showPopup == "loading" ? '' : `　@${showPopup}`}
+                    {lang === "ja"
+                      ? "予約リスト"
+                      : lang === "en"
+                      ? "Reservation List"
+                      : ""}
+                    {showPopup == "loading" ? "" : `　@${showPopup}`}
                   </a>
                 </div>
-                {showPopup == "loading" ? (
-                  <div>Loading...</div>
-                ) : (
-                  <>
-                    <div className="grid grid-cols-12 gap-4 text-center text-gray-800">
-                      <div className="col-span-3 truncate">
-                        {lang === "ja" ? "種類" : lang === "en" ? "Type" : ""}
-                      </div>
-                      <div className="col-span-2">
-                        {lang === "ja" ? "開始" : lang === "en" ? "Start" : ""}
-                      </div>
-                      <div className="col-span-2">
-                        {lang === "ja" ? "終了" : lang === "en" ? "End" : ""}
-                      </div>
-                      <div className="col-span-5 truncate">
-                        {lang === "ja"
-                          ? "予約名"
-                          : lang === "en"
-                          ? "Title"
-                          : ""}
-                      </div>
+                <div className="flex flex-col gap-2">
+                  <div className="grid grid-cols-12 gap-4  text-center text-gray-800">
+                    <div className="col-span-3 truncate">
+                      {lang === "ja" ? "種類" : lang === "en" ? "Type" : ""}
                     </div>
-                    {selectedResv.map((resv) => (
+                    <div className="col-span-2">
+                      {lang === "ja" ? "開始" : lang === "en" ? "Start" : ""}
+                    </div>
+                    <div className="col-span-2">
+                      {lang === "ja" ? "終了" : lang === "en" ? "End" : ""}
+                    </div>
+                    <div className="col-span-5 truncate">
+                      {lang === "ja" ? "予約名" : lang === "en" ? "Title" : ""}
+                    </div>
+                  </div>
+                  {showPopup == "loading" ? (
+                    <div className="grid grid-cols-12 gap-4 text-center text-gray-600">
                       <div
-                        key={resv.id}
-                        className="grid grid-cols-12 gap-4 pb-1 text-center text-gray-600"
-                      >
-                        <div className="col-span-3 truncate">{resv.type}</div>
-                        <div className="col-span-2">
-                          {format(resv.startTime, "H:mm")}
+                        className={`col-span-3 animate-pulse truncate rounded h-3 w-full ${closedBg}`}
+                      ></div>
+                      <div
+                        className={`col-span-2 animate-pulse rounded h-3 w-full ${closedBg}`}
+                      ></div>
+                      <div
+                        className={`col-span-2 animate-pulse rounded h-3 w-full ${closedBg}`}
+                      ></div>
+                      <div
+                        className={`col-span-5 truncate animate-pulse rounded h-3 w-full ${closedBg}`}
+                      ></div>
+                    </div>
+                  ) : (
+                    <>
+                      {selectedResv.map((resv) => (
+                        <div
+                          key={resv.id}
+                          className="grid grid-cols-12 gap-4 pb-1 text-center text-gray-600"
+                        >
+                          <div className="col-span-3 truncate">{resv.type}</div>
+                          <div className="col-span-2">
+                            {format(resv.startTime, "H:mm")}
+                          </div>
+                          <div className="col-span-2">
+                            {format(resv.endTime, "H:mm")}
+                          </div>
+                          <div className="col-span-5 truncate">
+                            {resv.title}
+                          </div>
                         </div>
-                        <div className="col-span-2">
-                          {format(resv.endTime, "H:mm")}
-                        </div>
-                        <div className="col-span-5 truncate">{resv.title}</div>
-                      </div>
-                    ))}
-                  </>
-                )}
+                      ))}
+                    </>
+                  )}
+                </div>
               </div>
             </>
           )}

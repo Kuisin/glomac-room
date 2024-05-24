@@ -277,7 +277,7 @@ const Room = ({
   return (
     <button
       className={`px-2 py-1 rounded shadow min-w-14 ${
-        open ? `${openBg} ${openText}` : `${closedBg} ${closedText}`
+        open ? `cursor-default ${openBg} ${openText}` : `${closedBg} ${closedText}`
       }`}
       onClick={() => handleClick(open)}
     >

@@ -149,7 +149,7 @@ const FooterButton = ({
   return (
     <button
       className={`py-2 rounded ${
-        selected ? `px-1 ${openBg}` : "px-0.5 hover:bg-gray-200"
+        selected ? `px-1 ${openBg}` : "px-1 hover:bg-gray-200"
       }`}
       onClick={action}
     >

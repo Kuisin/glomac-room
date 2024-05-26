@@ -462,12 +462,11 @@ export default function Home() {
     const todayStr = format(new Date(), "yyy-MM-dd");
     // console.log(todayStr);
 
-    fetch("/api/getOpenByPeriods", {
-      method: "POST",
+    fetch(`/api/getOpenByPeriods?facilityId=${1}`, {
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ todayStr, facilityId: 1 }),
     })
       .then((res) => res.json())
       .then((data) => {

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { format } from 'date-fns';
 import moment from 'moment-timezone';
@@ -86,20 +86,23 @@ const fetchRoomByFacility = async (facilityId: number) => {
             facilityId,
             NOT: {
                 valid: 'DISABLE',
-              },
             },
+        },
         select: { id: true, floor: true, name: true },
     });
     return rooms;
 }
 
-const fetchResvByRoom = async (todayStr: string, facilityId: number) => {
+const fetchResvByRoom = async (facilityId: number) => {
     // console.log(todayStr);
-    const today = new Date(todayStr);
-    const todayServer = new Date()
-    const nextWeek = new Date();
-    nextWeek.setDate(todayServer.getDate() + 7);
-    // console.log(today);
+    const now = new Date();
+    console.log(now);
+    let today = new Date(now.toLocaleString('en-US', {timeZone: 'Asia/Tokyo'}));
+    today.setHours(0,0,0,0);
+    console.log(today);
+
+    const nextWeek = new Date(today);
+    nextWeek.setDate(today.getDate() + 7);
 
     const rooms = await fetchRoomByFacility(facilityId);
 
@@ -122,11 +125,11 @@ const fetchResvByRoom = async (todayStr: string, facilityId: number) => {
 
     let availability: AvailabilityRoom = {};
     try {
-        days.map((day, dIndex: number) => {
+        days.map((_, dIndex: number) => {
             periodTimes.map((period, pIndex: number) => {
                 availability = {};
-                const { name, startTime, endTime } = period;
-                const date = new Date(todayStr)
+                const { startTime, endTime } = period;
+                const date = new Date(today)
                 date.setDate(today.getDate() + dIndex)
                 const dateStr = format(date, 'yyy-MM-dd')
 
@@ -162,7 +165,7 @@ const fetchResvByRoom = async (todayStr: string, facilityId: number) => {
                 });
                 // console.log(periodStart, periodEnd, availability['6']['F601']);
 
-                
+
                 if (!availabilityAll[dateStr]) {
                     availabilityAll[dateStr] = {};
                 }
@@ -184,10 +187,27 @@ const fetchResvByRoom = async (todayStr: string, facilityId: number) => {
 export async function POST(req: Request) {
     try {
         const data: any = await req.json();
-        const { todayStr, facilityId } = data;
+        const { facilityId } = data;
 
-        const { availabilityAll, rooms } = await fetchResvByRoom(todayStr, facilityId);
+        const { availabilityAll, rooms } = await fetchResvByRoom(facilityId);
 
+        return NextResponse.json({ ok: true, availabilityAll, rooms }, { status: 200 });
+    } catch (err) {
+        console.error('Error fetching room availability:', err);
+        return NextResponse.json({ ok: false, message: err }, { status: 500 });
+    } finally {
+        await prisma.$disconnect();
+    }
+}
+
+export async function GET(req: NextRequest) {
+    try {
+        // const data: any = await req.json();
+        // const { todayStr, facilityId } = data;
+        const facilityId = parseInt(req.nextUrl.searchParams.get("facilityId") || '0', 10);
+        if (facilityId == 0) return NextResponse.json({ ok: false, message: 'cannot find facility' }, { status: 500 });
+
+        const { availabilityAll, rooms } = await fetchResvByRoom(facilityId);
         return NextResponse.json({ ok: true, availabilityAll, rooms }, { status: 200 });
     } catch (err) {
         console.error('Error fetching room availability:', err);

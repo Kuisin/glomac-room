@@ -10,7 +10,7 @@ const fetchRoomByFacility = async (ids: number[]) => {
         where: {
             id: { in: ids }
         },
-        select: { id: true, title: true, type: true, startTime: true, endTime: true,  },
+        select: { id: true, title: true, type: true, startTime: true, endTime: true, roomId: true },
     });
     return resvs;
 }

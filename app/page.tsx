@@ -558,7 +558,17 @@ export default function Home() {
                 <div className="flex flex-col gap-2 mx-3">
                   <div className="grid grid-cols-12 gap-4  text-center text-gray-800">
                     <div className="col-span-3 truncate">
-                      {lang === "ja" ? "種類" : lang === "en" ? "Type" : ""}
+                      {showPopup.slice(0, 5) == "Floor"
+                        ? lang === "ja"
+                          ? "教室"
+                          : lang === "en"
+                          ? "Room"
+                          : ""
+                        : lang === "ja"
+                        ? "種類"
+                        : lang === "en"
+                        ? "Type"
+                        : ""}
                     </div>
                     <div className="col-span-2">
                       {lang === "ja" ? "開始" : lang === "en" ? "Start" : ""}
@@ -592,7 +602,12 @@ export default function Home() {
                           key={resv.id}
                           className="grid grid-cols-12 gap-4 pb-1 text-left text-gray-600"
                         >
-                          <div className="col-span-3 truncate">{resv.type}</div>
+                          {/* <div className="col-span-3 truncate">{resv.type}</div> */}
+                          <div className="col-span-3 truncate">
+                            {showPopup.slice(0, 5) == "Floor"
+                              ? rooms[resv.roomId].name
+                              : resv.type}
+                          </div>
                           <div className="col-span-2">
                             {format(resv.startTime, "H:mm")}
                           </div>

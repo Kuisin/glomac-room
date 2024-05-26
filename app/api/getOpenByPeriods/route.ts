@@ -86,8 +86,8 @@ const fetchRoomByFacility = async (facilityId: number) => {
             facilityId,
             NOT: {
                 valid: 'DISABLE',
-              },
             },
+        },
         select: { id: true, floor: true, name: true },
     });
     return rooms;
@@ -162,7 +162,7 @@ const fetchResvByRoom = async (todayStr: string, facilityId: number) => {
                 });
                 // console.log(periodStart, periodEnd, availability['6']['F601']);
 
-                
+
                 if (!availabilityAll[dateStr]) {
                     availabilityAll[dateStr] = {};
                 }
@@ -175,8 +175,13 @@ const fetchResvByRoom = async (todayStr: string, facilityId: number) => {
         throw new Error('error with summarizing availability', err);
     }
 
+    const objectOfObjects = rooms.reduce((acc: any, obj: any) => {
+        acc[obj.id] = obj;
+        return acc;
+    }, {});
+
     // console.log(availabilityAll);
-    return { availabilityAll, rooms };
+    return { availabilityAll, rooms: objectOfObjects };
 }
 
 

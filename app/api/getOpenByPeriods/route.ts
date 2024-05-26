@@ -203,8 +203,6 @@ export async function POST(req: Request) {
 
 export async function GET(req: NextRequest) {
     try {
-        // const data: any = await req.json();
-        // const { todayStr, facilityId } = data;
         const facilityId = parseInt(req.nextUrl.searchParams.get("facilityId") || '0', 10);
         if (facilityId == 0) return NextResponse.json({ ok: false, message: 'cannot find facility' }, { status: 500 });
 

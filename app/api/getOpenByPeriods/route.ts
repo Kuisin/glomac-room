@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { format } from 'date-fns';
 import moment from 'moment-timezone';
+export const maxDuration = 15;
 
 const prisma = new PrismaClient();
 

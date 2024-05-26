@@ -299,8 +299,12 @@ const Floor = ({
 }: FloorProps) => {
   const handleFloorClick = () => {
     setShowPopup("loading");
-
     let floorReservationIds = rooms.flatMap((room) => room.reservationIds);
+
+    if (floorReservationIds.length == 0) {
+      setShowPopup('');
+      return;
+    }
 
     fetch("/api/getResv", {
       method: "POST",
@@ -321,12 +325,12 @@ const Floor = ({
 
   return (
     <div id={`floor-${floor}`} className="flex gap-3 w-max">
-      <a
+      <button
         className="bg-gray-200 text-gray-800 px-3 py-4 rounded shadow mr-2"
         onClick={handleFloorClick}
       >
         {floor}
-      </a>
+      </button>
       {rooms.map((room: RoomProps) => (
         <Room
           key={`${floor}-${room.name}`}

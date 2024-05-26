@@ -98,8 +98,8 @@ const fetchResvByRoom = async (facilityId: number) => {
     // console.log(todayStr);
     const now = new Date();
     console.log(now);
-    let today = new Date(now.toLocaleString('en-US', {timeZone: 'Asia/Tokyo'}));
-    today.setHours(0,0,0,0);
+    let today = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+    today.setHours(0, 0, 0, 0);
     console.log(today);
 
     const nextWeek = new Date(today);
@@ -179,8 +179,13 @@ const fetchResvByRoom = async (facilityId: number) => {
         throw new Error('error with summarizing availability', err);
     }
 
+    const objectOfObjects = rooms.reduce((acc: any, obj: any) => {
+        acc[obj.id] = obj;
+        return acc;
+    }, {});
+
     // console.log(availabilityAll);
-    return { availabilityAll, rooms };
+    return { availabilityAll, rooms: objectOfObjects };
 }
 
 

@@ -23,7 +23,7 @@ export async function POST(req: Request) {
             throw new Error('unknown university and/or facility');
         }
 
-        console.log(university.id, facility.id);
+        console.log(university.id, facility.id, data[0]);
 
         const reservations = [];
         for (const row of data) {

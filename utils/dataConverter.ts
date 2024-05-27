@@ -29,6 +29,13 @@ export const convertTimestampAdv = (timestamp: string) => {
     return finalDateTime;
 }
 
+export const toTimeInputValue = (time: string) => {
+    const hours = time.split(':')[0];
+    const minutes = time.split(':')[1];
+    const formattedTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    return formattedTime;
+};
+
 // const toDateInputValue = (date: string) => {
 //     const parsedDate = new Date(date);
 //     const tzOffset = parsedDate.getTimezoneOffset() * 60000; // offset in milliseconds

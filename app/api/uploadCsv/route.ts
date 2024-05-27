@@ -76,6 +76,7 @@ export async function POST(req: Request) {
             try {
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
+                today.setMinutes(today.getMinutes() - (9 * 60));
 
                 const rooms = await prisma.room.findMany({
                     where: { facilityId: facility.id },

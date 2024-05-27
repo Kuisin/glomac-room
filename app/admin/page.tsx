@@ -16,7 +16,7 @@ export default function Admin() {
         <div className='flex justify-center items-center'>
             <div className='grid grid-cols-1 lg:grid-cols-2 content-center items-center h-screen gap-8'>
                 <div className="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-                    <div className="text-gray-500 dark:text-gray-400 mb-4">
+                    <div className="w-10 h-10 text-gray-500 dark:text-gray-400 mb-4">
                         <FontAwesomeIcon icon={faHouse} className="text-2xl" />
                     </div>
                     <a onClick={() => router.push('./')} className="cursor-pointer">

@@ -26,13 +26,13 @@ interface CsvData {
 type HeaderMap = { [key: string]: string };
 
 const expectedHeaders: HeaderMap = {
-  title: "Title",
-  room: "Room",
-  startTime: "Start Date & Time",
-  endTime: "End Date & Time",
+  title: "Title: 予約区分",
+  room: "Room: 施設コード(01FG-0-XXX)",
+  startTime: "Start Date & Time: 予約開始日時(yyyy/MM/dd HH:mm)",
+  endTime: "End Date & Time: 予約終了日時(yyyy/MM/dd HH:mm)",
   //   type: "Type",
-  user: "User",
-  description: "Description",
+  user: "User: 予約者",
+  description: "Description: 予約事由",
 };
 
 const mapHeaders = (row: CsvData, headerMap: HeaderMap): CsvData => {
@@ -160,7 +160,7 @@ export default function BatchReservations() {
             ...mappedRow,
             startTime: convertTimestampAdv(mappedRow.startTime),
             endTime: convertTimestampAdv(mappedRow.endTime),
-            room: mappedRow.room.split("-")[2],
+            room: mappedRow.room.split("-")[2] || mappedRow.room,
             selected: false,
             error: !result.success,
             message: result.message,
@@ -264,8 +264,8 @@ export default function BatchReservations() {
           title: row.title,
           type: row.type || "",
           room: row.room,
-          startTime: new Date(row.startTime),
-          endTime: new Date(row.endTime),
+          startTime: row.startTime,
+          endTime: row.endTime,
           description: row.description || null,
           status: "CONFIRMED",
         };

@@ -1,10 +1,12 @@
 export const convertTimestampAdv = (timestamp: string) => {
     let parsedDate: Date | null = null;
     let finalDateTime: string;
+    const tokyoOffset = 9 * 60;
 
     try {
         try {
-            parsedDate = new Date(timestamp); // Tokyo is UTC+9
+            parsedDate = new Date(timestamp);
+            parsedDate.setMinutes(parsedDate.getMinutes() + tokyoOffset);
         } catch (err) {
             console.log('cannot parse date [Step 1]:', err);
 
@@ -13,17 +15,17 @@ export const convertTimestampAdv = (timestamp: string) => {
             const [hours, minutes] = time.trim().split(/[:.]+/).map(element => Number(element.trim()));
 
             console.log(years, months, days, hours, minutes);
-            parsedDate = new Date(years, months - 1, days, hours, minutes);
+            parsedDate = new Date(Date.UTC(years, months - 1, days, hours, minutes));
+            parsedDate.setMinutes(parsedDate.getMinutes());
         }
-
-        const tokyoOffset = 9 * 60;
-        parsedDate.setMinutes(parsedDate.getMinutes() - tokyoOffset);
     } catch (err) {
         console.log('cannot parse date [Step 2]:', err);
         parsedDate = new Date();
     }
+    // console.log(parsedDate);
     
     finalDateTime = parsedDate.toISOString().slice(0, -1).substring(0, 16);
+    console.log(finalDateTime);
     return finalDateTime;
 }
 

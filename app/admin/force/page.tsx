@@ -264,8 +264,8 @@ export default function BatchReservations() {
           title: row.title,
           type: row.type || "",
           room: row.room,
-          startTime: row.startTime,
-          endTime: row.endTime,
+          startTime: new Date(row.startTime),
+          endTime: new Date(row.endTime),
           description: row.description || null,
           status: "CONFIRMED",
         };

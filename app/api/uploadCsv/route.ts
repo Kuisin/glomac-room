@@ -63,6 +63,8 @@ export async function POST(req: Request) {
                 roomId: room.id,
                 startTime,
                 endTime,
+                // status: 'CONFIRMED',
+                description: row.description || null,
                 userId: row.user || null,
             });
         }

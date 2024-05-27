@@ -25,7 +25,7 @@ export const convertTimestampAdv = (timestamp: string) => {
     // console.log(parsedDate);
     
     finalDateTime = parsedDate.toISOString().slice(0, -1).substring(0, 16);
-    console.log(finalDateTime);
+    // console.log(finalDateTime);
     return finalDateTime;
 }
 

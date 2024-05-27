@@ -31,7 +31,7 @@ const expectedHeaders: HeaderMap = {
   startTime: "Start Date & Time: 予約開始日時(yyyy/MM/dd HH:mm)",
   endTime: "End Date & Time: 予約終了日時(yyyy/MM/dd HH:mm)",
   //   type: "Type",
-  user: "User: 予約者",
+  user: "User",
   description: "Description: 予約事由",
 };
 
@@ -217,7 +217,7 @@ export default function BatchReservations() {
       startTime: "",
       endTime: "",
       room: "",
-      type: "",
+      description: "",
       selected: false,
     });
     setPopup(true);

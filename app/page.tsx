@@ -462,6 +462,19 @@ export default function Home() {
     });
   };
 
+  const convertType = (type: string, lang: string) => {
+    if (type == 'COURSE') {
+      if (lang == 'ja') return '授業等';
+      if (lang == 'en') return 'Course';
+    } else if (type == 'FORCE') {
+      if (lang == 'ja') return '事務室';
+      if (lang == 'en') return 'Office';
+    } else {
+      if (lang == 'ja') return 'その他';
+      if (lang == 'en') return 'Other';
+    }
+  }
+
   useEffect(() => {
     const todayStr = format(new Date(), "yyy-MM-dd");
     // console.log(todayStr);
@@ -609,7 +622,7 @@ export default function Home() {
                           <div className="col-span-3 truncate">
                             {showPopup.slice(0, 5) == "Floor"
                               ? rooms[resv.roomId].name
-                              : resv.type}
+                              : convertType(resv.type, lang)}
                           </div>
                           <div className="col-span-2">
                             {format(resv.startTime, "H:mm")}

@@ -211,6 +211,7 @@ export default function BatchReservations() {
                     room: row.room.split("-")[3],
                     startTime: row.startTime,
                     endTime: row.endTime,
+                    description: row.description || null,
                     status: 'CONFIRMED',
                 };
             });

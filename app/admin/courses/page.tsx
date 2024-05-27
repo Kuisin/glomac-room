@@ -4,6 +4,8 @@ import React, { ChangeEvent, useState } from 'react';
 import Papa from 'papaparse';
 import { format, parseISO, addDays } from 'date-fns';
 
+import { convertTimestampAdv } from "@/utils/dataConverter";
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { config } from '@fortawesome/fontawesome-svg-core'
 import '@fortawesome/fontawesome-svg-core/styles.css'
@@ -55,16 +57,6 @@ const checkValid = (data: CsvData) => {
     return { success: false, message };
 }
 
-const toDateInputValue = (date: string) => {
-    const year = parseInt(date.substring(0, 4), 10);
-    const month = parseInt(date.substring(5, 7), 10) - 1;
-    const day = parseInt(date.substring(8, 10), 10);
-
-    const parsedDate = new Date(year, month, day);
-    console.log(year, month, day);
-    return format(parsedDate, "yyyy-MM-dd");
-};
-
 const toTimeInputValue = (time: string) => {
     const hours = time.split(':')[0];
     const minutes = time.split(':')[1];
@@ -95,14 +87,24 @@ const repeatSchedules = (data: CsvData[]) => {
     return repeatedData;
 }
 
-const safeFormat = (dateString: string, formatString: string) => {
-    try {
-        return format(parseISO(dateString), formatString);
-    } catch (error) {
-        console.error('Error formatting date:', error);
-        return 'Invalid date';
-    }
-};
+// const safeFormat = (dateString: string, formatString: string) => {
+//     try {
+//         return format(parseISO(dateString), formatString);
+//     } catch (error) {
+//         console.error('Error formatting date:', error);
+//         return 'Invalid date';
+//     }
+// };
+
+// const toDateInputValue = (date: string) => {
+//     const year = parseInt(date.substring(0, 4), 10);
+//     const month = parseInt(date.substring(5, 7), 10) - 1;
+//     const day = parseInt(date.substring(8, 10), 10);
+
+//     const parsedDate = new Date(year, month, day);
+//     console.log(year, month, day);
+//     return format(parsedDate, "yyyy-MM-dd");
+// };
 
 export default function CourseReservations() {
     const router = useRouter();
@@ -156,10 +158,12 @@ export default function CourseReservations() {
 
                         // Validate time formats
                         try {
-                            const startTime = toTimeInputValue(mappedRow.startTime);
-                            const endTime = toTimeInputValue(mappedRow.endTime);
-                            const day = toDateInputValue(`${mappedRow.day}T00:00:00`);
-                            const endOfRepeat = toDateInputValue(`${mappedRow.endOfRepeat}T00:00:00`);
+                            // startTime: convertTimestampAdv(mappedRow.startTime),
+                            // endTime: convertTimestampAdv(mappedRow.endTime),
+                            const startTime = convertTimestampAdv(mappedRow.startTime);
+                            const endTime = convertTimestampAdv(mappedRow.endTime);
+                            const day = convertTimestampAdv(`${mappedRow.day}T00:00:00`);
+                            const endOfRepeat = convertTimestampAdv(`${mappedRow.endOfRepeat}T00:00:00`);
 
                             return {
                                 ...mappedRow,
@@ -466,16 +470,18 @@ export default function CourseReservations() {
                                                     {row.room}
                                                 </td>
                                                 <td className="px-3 py-1 whitespace-nowrap">
-                                                    {format(toDateInputValue(row.day), "yyyy/MM/dd (EEE)")}
+                                                    {format(row.day, "yyyy/MM/dd (EEE)")}
                                                 </td>
                                                 <td className="px-3 py-1 whitespace-nowrap">
-                                                    {toTimeInputValue(row.startTime)}
+                                                    {/* {toTimeInputValue(row.startTime)} */}
+                                                    {format(row.startTime, "yyyy/MM/dd (EEE) HH:mm")}
                                                 </td>
                                                 <td className="px-3 py-1 whitespace-nowrap">
-                                                    {toTimeInputValue(row.endTime)}
+                                                    {/* {toTimeInputValue(row.endTime)} */}
+                                                    {format(row.endTime, "yyyy/MM/dd (EEE) HH:mm")}
                                                 </td>
                                                 <td className="px-3 py-1 whitespace-nowrap">
-                                                    {format(toDateInputValue(row.endOfRepeat), "yyyy/MM/dd (EEE)")}
+                                                    {format(row.endOfRepeat, "yyyy/MM/dd (EEE)")}
                                                 </td>
                                                 <td className="px-3 py-1 whitespace-nowrap">
                                                     {row.user}

@@ -3,7 +3,6 @@ import { useRouter } from "next/navigation";
 import React, { ChangeEvent, useState } from "react";
 import Papa from "papaparse";
 import { format } from "date-fns";
-import * as XLSX from "xlsx";
 
 import { convertTimestampAdv } from "@/utils/dataConverter";
 

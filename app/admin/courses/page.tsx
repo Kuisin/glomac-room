@@ -256,6 +256,7 @@ export default function CourseReservations() {
 
   const handleUpload = async () => {
     setIsUploading(true);
+    setError('Creating Upload Data...')
     console.log("start upload");
     try {
       const repeatedData = repeatSchedules(csvData);
@@ -318,19 +319,22 @@ export default function CourseReservations() {
           throw new Error("Failed to upload data");
         }
       };
+      setError('Uploading to Server. This may take a while...');
 
-      const chunkSize = 300;
+      const chunkSize = 200;
       for (let i = 0; i < uploadData.length; i += chunkSize) {
-        console.log(`start batch: ${i}-${i + chunkSize}`)
+        console.log(`start batch: ${i}-${i + chunkSize}`);
+        setError(`Uploading to Server. [${i}-${i + chunkSize}/${uploadData.length}]`);
         const chunk = uploadData.slice(i, i + chunkSize);
         await uploadBatch(chunk);
-        console.log('batch completed')
+        console.log('batch completed');
       }
 
       window.alert("Data upload successful! Reloading the page...");
       window.location.reload();
-    } catch (error) {
-      console.error("Error uploading data:", error);
+    } catch (err) {
+        setError('Unknown Error: ' + err);
+      console.error("Error uploading data:", err);
     }
   };
 
@@ -407,7 +411,7 @@ export default function CourseReservations() {
             className="block mb-2 text-normal font-medium text-gray-900 dark:text-white"
             htmlFor="file_input"
           >
-            Upload file (CSV):
+            Upload file (CSV):　　200 件/分（繰返分を含む）
           </label>
           <input
             className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"

@@ -6,7 +6,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const accessKey = 'glomac-mana';
+  const accessKey = 'glomac-2024';
   const [permission, setPermission] = useState<boolean>(false);
   const [password, setPassword] = useState<string>('')
 

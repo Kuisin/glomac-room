@@ -319,12 +319,12 @@ export default function CourseReservations() {
           throw new Error("Failed to upload data");
         }
       };
-      setError('Uploading to Server. This may take a while...');
 
+      setError('Uploading to Server. This may take a while...');
       const chunkSize = 200;
       for (let i = 0; i < uploadData.length; i += chunkSize) {
         console.log(`start batch: ${i}-${i + chunkSize}`);
-        setError(`Uploading to Server. [${i}-${i + chunkSize}/${uploadData.length}]`);
+        setError(`Uploading to Server... [${i}-${i + chunkSize}/${uploadData.length}]`);
         const chunk = uploadData.slice(i, i + chunkSize);
         await uploadBatch(chunk);
         console.log('batch completed');

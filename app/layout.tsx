@@ -8,8 +8,8 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Facility Reservation (GLOMAC)",
-  description: "Made by Kaisei Sawada",
+  title: "Roomie (GLOMAC)",
+  description: "Developed for GLOMAC by Kaisei Sawada",
 };
 
 export default function RootLayout({

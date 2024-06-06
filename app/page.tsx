@@ -65,7 +65,7 @@ const closedBg = "bg-gray-200";
 const openText = "text-green-800";
 const closedText = "text-gray-800";
 
-const feedbackFormUrl = "google.com";
+const feedbackFormUrl = "https://forms.gle/ZaPPf6GbmhM3HqyX6";
 
 const Footer = ({ lang }: { lang: string }) => {
   return (

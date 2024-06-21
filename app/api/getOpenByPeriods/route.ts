@@ -226,7 +226,7 @@ export async function GET(req: NextRequest) {
                 break;
             }
         }
-        const now = {day, period}
+        const now = {day, period};
 
         return NextResponse.json({ ok: true, availabilityAll, rooms, now }, { status: 200 });
     } catch (err) {

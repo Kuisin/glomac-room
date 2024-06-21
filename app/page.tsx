@@ -422,26 +422,7 @@ export default function Home() {
 
   const [showList, setShowList] = useState<boolean>(false);
   const [showPopup, setShowPopup] = useState<string>("");
-  const [selectedResv, setSelectedResvs] = useState<any[]>([
-    {
-      title: "Test",
-      startTime: "2024-05-24 09:00",
-      endTime: "2024-05-24 10:40",
-      type: "COURSE",
-    },
-    {
-      title: "THis is a test Schedule",
-      startTime: "2024-05-24 09:00",
-      endTime: "2024-05-24 10:40",
-      type: "COURSE",
-    },
-    {
-      title: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-      startTime: "2024-05-24 09:00",
-      endTime: "2024-05-24 10:40",
-      type: "COURSE",
-    },
-  ]);
+  const [selectedResv, setSelectedResvs] = useState<any[]>([]);
 
   const [selectedDay, setSelectedDay] = useState<number>(0);
   const [selectedPeriod, setSelectedPeriod] = useState<number>(0);
@@ -476,9 +457,6 @@ export default function Home() {
   }
 
   useEffect(() => {
-    const todayStr = format(new Date(), "yyy-MM-dd");
-    // console.log(todayStr);
-
     fetch(`/api/getOpenByPeriods?facilityId=${1}`, {
       method: "GET",
       headers: {
@@ -490,6 +468,9 @@ export default function Home() {
         if (data.ok) {
           setAvailability(data.availabilityAll);
           setRooms(data.rooms);
+
+          setSelectedDay(data.now.day);
+          setSelectedPeriod(data.now.period);
           setIsLoading(false);
         }
       });

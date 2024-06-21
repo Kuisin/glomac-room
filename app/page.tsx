@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
+import moment from "moment-timezone";
 // update
 
 type RoomProps = {
@@ -339,6 +340,23 @@ export default function Home() {
     const todayStr = format(new Date(), "yyy-MM-dd");
     console.log(todayStr);
 
+    const date = new Date();
+    const day = (date.getDay() - 1) % 7 || 0;
+
+    let period = 0;
+    const currentTime = moment.tz("Asia/Tokyo").format("HH:mm:ss");
+    for (var i = 0; i < periodTimes.length; i++) {
+      const endTime = moment(periodTimes[i].endTime, "HH:mm:ss");
+
+      if (moment(currentTime, "HH:mm:ss").isBefore(endTime, "minute")) {
+        period = i;
+        break;
+      }
+    }
+
+    setSelectedDay(day);
+    setSelectedPeriod(period);
+
     fetch(`/api/getOpenByPeriods?facilityId=${1}`, {
       method: "GET",
       headers: {
@@ -350,9 +368,6 @@ export default function Home() {
         if (data.ok) {
           setAvailability(data.availabilityAll);
           setRooms(data.rooms);
-
-          setSelectedDay(data.now.day);
-          setSelectedPeriod(data.now.period);
           setIsLoading(false);
         }
       });
@@ -365,9 +380,7 @@ export default function Home() {
     >
       <header className="sticky top-0 left-0 z-50 w-full flex justify-center bg-white px-4 py-4 shadow">
         <div className="w-full max-w-lg flex flex-row items-center justify-between">
-          <h1 className="font-bold">
-            roomie - Forest Gateway Chuo
-          </h1>
+          <h1 className="font-bold">roomie - Forest Gateway Chuo</h1>
           <button
             className="bg-gray-200 text-gray-800 px-2 py-2 rounded shadow"
             style={{ cursor: "pointer" }}

@@ -205,24 +205,10 @@ export async function GET(req: NextRequest) {
     try {
         const facilityId = parseInt(req.nextUrl.searchParams.get("facilityId") || '0', 10);
         if (facilityId == 0) return NextResponse.json({ ok: false, message: 'cannot find facility' }, { status: 500 });
-        
-        const date = new Date();
-        const day = (date.getDay() - 1) % 7 || 0;
-
-        let period = 0;
-        const currentTime = moment.tz('Asia/Tokyo').format('HH:mm:ss');
-        for (var i = 0; i < periodTimes.length; i++) {
-            const endTime = moment(periodTimes[i].endTime, 'HH:mm:ss');
-
-            if (moment(currentTime, 'HH:mm:ss').isBefore(endTime, 'minute')) {
-                period = i;
-                break;
-            }
-        }
-        const now = {day, period};
 
         const { availabilityAll, rooms } = await fetchResvByRoom(facilityId);
-        return NextResponse.json({ ok: true, availabilityAll, rooms, now }, { status: 200 });
+        
+        return NextResponse.json({ ok: true, availabilityAll, rooms }, { status: 200 });
     } catch (err) {
         console.error('Error fetching room availability:', err);
         return NextResponse.json({ ok: false, message: err }, { status: 500 });

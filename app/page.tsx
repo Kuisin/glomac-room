@@ -350,6 +350,9 @@ export default function Home() {
         if (data.ok) {
           setAvailability(data.availabilityAll);
           setRooms(data.rooms);
+
+          setSelectedDay(data.now.day);
+          setSelectedPeriod(data.now.period);
           setIsLoading(false);
         }
       });

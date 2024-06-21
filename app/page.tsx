@@ -65,7 +65,7 @@ const closedBg = "bg-gray-200";
 const openText = "text-green-800";
 const closedText = "text-gray-800";
 
-const feedbackFormUrl = "google.com";
+const feedbackFormUrl = "https://forms.gle/ZaPPf6GbmhM3HqyX6";
 
 const Footer = ({ lang }: { lang: string }) => {
   return (
@@ -366,12 +366,7 @@ export default function Home() {
       <header className="sticky top-0 left-0 z-50 w-full flex justify-center bg-white px-4 py-4 shadow">
         <div className="w-full max-w-lg flex flex-row items-center justify-between">
           <h1 className="font-bold">
-            Roomie - Forest Gateway Chuo
-            {/* {lang === "ja"
-              ? " 空き教室"
-              : lang === "en"
-              ? " - Availability"
-              : ""} */}
+            roomie - Forest Gateway Chuo
           </h1>
           <button
             className="bg-gray-200 text-gray-800 px-2 py-2 rounded shadow"

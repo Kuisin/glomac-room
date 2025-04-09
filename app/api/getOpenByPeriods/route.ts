@@ -190,21 +190,21 @@ const fetchResvByRoom = async (facilityId: number) => {
 
 
 
-export async function POST(req: Request) {
-    try {
-        const data: any = await req.json();
-        const { facilityId } = data;
+// export async function POST(req: Request) {
+//     try {
+//         const data: any = await req.json();
+//         const { facilityId } = data;
 
-        const { availabilityAll, rooms } = await fetchResvByRoom(facilityId);
+//         const { availabilityAll, rooms } = await fetchResvByRoom(facilityId);
 
-        return NextResponse.json({ ok: true, availabilityAll, rooms }, { status: 200 });
-    } catch (err) {
-        console.error('Error fetching room availability:', err);
-        return NextResponse.json({ ok: false, message: err }, { status: 500 });
-    } finally {
-        await prisma.$disconnect();
-    }
-}
+//         return NextResponse.json({ ok: true, availabilityAll, rooms }, { status: 200 });
+//     } catch (err) {
+//         console.error('Error fetching room availability:', err);
+//         return NextResponse.json({ ok: false, message: err }, { status: 500 });
+//     } finally {
+//         await prisma.$disconnect();
+//     }
+// }
 
 export async function GET(req: NextRequest) {
     try {

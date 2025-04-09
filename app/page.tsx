@@ -319,7 +319,7 @@ const Floor = ({
           setSelectedResvs(data.reservations);
           setShowPopup(`Floor ${floor}`);
         }
-        console.log(data);
+        // console.log(data);
       });
   };
 
@@ -359,8 +359,9 @@ const Floors = ({
   setSelectedResvs: (reservationIds: any) => void;
   setShowPopup: (show: string) => void;
 }) => {
-  const { dateStr, timeStr } = toDT(day, periodNo);
+  const { dateStr } = toDT(day, periodNo);
   const currentSelection = availability[dateStr][periodNo];
+  // console.log(availability);
 
   return (
     <>
@@ -397,7 +398,7 @@ const Floors = ({
 const toDT = (day: number, period: number) => {
   const date = new Date();
   date.setDate(date.getDate() + ((day + 8 - date.getDay()) % 7));
-  const dateStr = format(date, "yyy-MM-dd");
+  const dateStr = format(date, "yyyy-MM-dd");
   const timeStr =
     periodTimes[period].startTime + "-" + periodTimes[period].endTime;
   return { dateStr, timeStr };

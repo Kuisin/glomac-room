@@ -594,7 +594,7 @@ export default function Home() {
               </div>
             )}
             <div className="mt-4 mb-2 text-center text-xs">
-              Developed by Kaisei Sawada
+              Developed for GLOMAC
             </div>
           </div>
         </div>

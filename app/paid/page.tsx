@@ -598,7 +598,7 @@ export default function Home() {
                       {selectedResv.map((resv) => (
                         <div
                           key={resv.id}
-                          className="grid grid-cols-12 gap-4 pb-1 text-left text-gray-600"
+                          className="grid grid-cols-12 gap-4 pb-1 text-center text-gray-600"
                         >
                           {/* <div className="col-span-3 truncate">{resv.type}</div> */}
                           <div className="col-span-3 truncate">

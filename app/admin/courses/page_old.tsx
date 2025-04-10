@@ -2,9 +2,9 @@
 import { useRouter } from "next/navigation";
 import React, { ChangeEvent, useState } from "react";
 import Papa from "papaparse";
-import { format } from "date-fns";
+import { format, parseISO, addDays } from "date-fns";
 
-import { convertTimestampAdv } from "@/utils/dataConverter";
+import { convertTimestampAdv, toTimeInputValue } from "@/utils/dataConverter";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { config } from "@fortawesome/fontawesome-svg-core";
@@ -22,23 +22,35 @@ interface CsvData {
   [key: string]: any;
 }
 
-type HeaderMap = { [key: string]: string };
+const convertDays = {
+  "月": 1, // Monday
+  "火": 2, // Tuesday
+  "水": 3, // Wednesday
+  "木": 4, // Thursday
+  "金": 5, // Friday
+  "土": 6, // Saturday
+  "日": 0  // Sunday
+};
 
-const expectedHeaders: HeaderMap = {
-  title: "Title: 予約区分",
-  room: "Room: 施設コード(01FG-0-XXX)",
-  startTime: "Start Date & Time: 予約開始日時(yyyy/MM/dd HH:mm)",
-  endTime: "End Date & Time: 予約終了日時(yyyy/MM/dd HH:mm)",
-  //   type: "Type",
-  user: "User",
-  description: "Description: 予約事由",
+type HeaderMap = { [key: string]: string };
+type HeaderMapList = { [key: string]: string[] };
+const expectedHeaders: HeaderMapList = {
+  title: ["Title: 授業名", "漢字科目名"],
+  room: ["Room: 教室番号（F000）", "部屋番号"],
+  // day: "Start Day: 開始日（yyyy/MM/dd）",
+  day: ["Day: 実施曜日（月、火、水、木、金、土、日）", "曜日名称"],
+  startTime: ["Start Time: 開始時間（HH:mm）", "開始時間"],
+  endTime: ["End Time: 終了時間（HH:mm）", "終了時間"],
+  //   endOfRepeat: "End of Repeat",
+    // type: "Type",
+  //   user: "User",
 };
 
 const mapHeaders = (row: CsvData, headerMap: HeaderMap): CsvData => {
   const mappedRow: CsvData = {};
   for (const key in headerMap) {
-    if (row[headerMap[key]] !== undefined) {
-      mappedRow[key] = row[headerMap[key]];
+    if (row[headerMap[key][0]] !== undefined) {
+      mappedRow[key] = row[headerMap[key][0]];
     } else {
       mappedRow[key] = "";
     }
@@ -48,30 +60,20 @@ const mapHeaders = (row: CsvData, headerMap: HeaderMap): CsvData => {
 
 const checkValid = (data: CsvData) => {
   let message = [];
-  if (!data.title || data.title == "") message.push("Title");
-  // if (!data.type || data.type == '') message.push('Type');
-  if (!data.room || data.room == "") message.push("Room");
-  if (!data.startTime || data.startTime == "") message.push("Start Time");
-  if (!data.endTime || data.endTime == "") message.push("End Time");
+  if (!data.title || data.title === "") message.push("Title");
+  // if (!data.type || data.type === '') message.push('Type');
+  if (!data.room || data.room === "") message.push("Room");
+  if (!data.startTime || data.startTime === "") message.push("Start Time");
+  if (!data.endTime || data.endTime === "") message.push("End Time");
+  if (!data.day || data.day === "") message.push("Day");
+//   if (!data.endOfRepeat || data.endOfRepeat === "")
+//     message.push("End of Repeat");
 
-  if (message.length == 0) return { success: true, message };
+  if (message.length === 0) return { success: true, message };
   return { success: false, message };
 };
 
-// const toDateInputValue = (date: string) => {
-//   try {
-//     const parsedDate = new Date(date);
-//     const tzOffset = parsedDate.getTimezoneOffset() * 60000; // offset in milliseconds
-//     const localISOTime = new Date(parsedDate.getTime() - tzOffset)
-//       .toISOString()
-//       .slice(0, -1);
-//     return localISOTime.substring(0, 16); // 'YYYY-MM-DDTHH:MM'
-//   } catch (err) {
-//     console.log(err);
-//   }
-// };
-
-export default function BatchReservations() {
+export default function CourseReservations() {
   const router = useRouter();
 
   const [csvData, setCsvData] = useState<CsvData[]>([]);
@@ -86,6 +88,8 @@ export default function BatchReservations() {
   const [isUploading, setIsUploading] = useState<boolean>(false);
 
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [startOfRepeat, setStartOfRepeat] = useState<string>("");
+  const [endOfRepeat, setEndOfRepeat] = useState<string>("");
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -96,6 +100,19 @@ export default function BatchReservations() {
         complete: (result: any) => {
           const headers = result.meta.fields;
           setCsvHeaders(headers);
+          
+          // Auto-map headers if they match expected headers
+          const autoMap: HeaderMap = {};
+          headers.forEach((header: string) => {
+            // Check if header matches any expected header
+            Object.entries(expectedHeaders).forEach(([key, value]) => {
+              if (value[1] === header) {
+                autoMap[key] = header;
+              }
+            });
+          });
+          
+          setHeaderMap(autoMap);
           setHeaderMapDialog(true);
         },
         error: (error: any) => {
@@ -117,48 +134,50 @@ export default function BatchReservations() {
 
   const handleHeaderMapConfirm = () => {
     if (uploadedFile) {
-      const fileExtension = uploadedFile.name.split(".").pop()?.toLowerCase();
+      Papa.parse<CsvData>(uploadedFile, {
+        header: true,
+        complete: (result: any) => {
+          const parsedData = result.data
+            .map((row: CsvData, index: number) => {
+              const mappedRow = mapHeaders(row, headerMap);
+              const result = checkValid(mappedRow);
 
-      if (fileExtension === "csv") {
-        Papa.parse<CsvData>(uploadedFile, {
-          header: true,
-          complete: (result: any) => {
-            processParsedData(result.data);
-          },
-          error: (error: any) => {
-            console.error("Error parsing CSV:", error);
-          },
-        });
-      } else {
-        console.error("Unsupported file type");
-      }
+              try {
+                const startTime = toTimeInputValue(mappedRow.startTime);
+                const endTime = toTimeInputValue(mappedRow.endTime);
+                // const day = convertTimestampAdv(`${mappedRow.day} 00:00:00`);
+
+                const firstDate = new Date(startOfRepeat);
+                const targetDay = convertDays[mappedRow.day as keyof typeof convertDays];
+                const daysToAdd = (targetDay - firstDate.getDay() + 7) % 7;
+                firstDate.setDate(firstDate.getDate() + daysToAdd);
+                console.log("new row:", firstDate, targetDay, firstDate)
+
+                return {
+                  ...mappedRow,
+                  startTime,
+                  endTime,
+                  firstDate: firstDate.toISOString(),
+                //   endOfRepeat: format(endOfRepeat, "yyyy-MM-dd"),
+                  selected: false,
+                  error: !result.success,
+                  message: result.message,
+                };
+              } catch (err) {
+                console.log("skip row: ", err);
+                setError(error + `[Skip Row: ${index}]`);
+                return null;
+              }
+            })
+            .filter((row: CsvData | null) => row !== null);
+          setCsvData(parsedData);
+          setHeaderMapDialog(false);
+        },
+        error: (error: any) => {
+          console.error("Error parsing CSV:", error);
+        },
+      });
     }
-  };
-
-  const processParsedData = (data: CsvData[]) => {
-    const parsedData = data
-      .map((row: CsvData, index: number) => {
-        const mappedRow = mapHeaders(row, headerMap);
-        const result = checkValid(mappedRow);
-        try {
-          const dataObject = {
-            ...mappedRow,
-            startTime: convertTimestampAdv(mappedRow.startTime),
-            endTime: convertTimestampAdv(mappedRow.endTime),
-            room: mappedRow.room.split("-")[2] || mappedRow.room,
-            selected: false,
-            error: !result.success,
-            message: result.message,
-          };
-          return dataObject;
-        } catch (err) {
-          console.log("skip row: ", err);
-          setError(error + `[Skip Row: ${index}]`);
-          return null;
-        }
-      }).filter(row => row !== null);
-    setCsvData(parsedData as CsvData[]);
-    setHeaderMapDialog(false);
   };
 
   const handleCheckboxChange = (rowIndex: number, isChecked: boolean) => {
@@ -191,7 +210,7 @@ export default function BatchReservations() {
   };
 
   const removeDataMulti = () => {
-    const newData = csvData.filter((row) => row.selected == false);
+    const newData = csvData.filter((row) => !row.selected);
     setCsvData(newData);
   };
 
@@ -202,7 +221,10 @@ export default function BatchReservations() {
       startTime: "",
       endTime: "",
       room: "",
-      description: "",
+      type: "",
+      user: "",
+      day: "",
+      endOfRepeat: "",
       selected: false,
     });
     setPopup(true);
@@ -227,7 +249,6 @@ export default function BatchReservations() {
         setPopupMessage(result.message.join(", "));
         setError("Some Fields are Empty");
       }
-    } else {
     }
   };
 
@@ -241,58 +262,136 @@ export default function BatchReservations() {
 
   const handleUpload = async () => {
     setIsUploading(true);
+    setError('Creating Upload Data...')
+    console.log("start upload");
     try {
-      const uploadData = csvData.map((row) => {
+      const repeatedData = repeatSchedules(csvData);
+      const uploadData = repeatedData.map((row) => {
+        // console.log(new Date(row.startTime));
         return {
-          universityId: 1,
-          facilityId: 1,
-          title: row.title,
+          title: row.title || "",
           type: row.type || "",
-          room: row.room,
+          room: row.room.trim(),
           startTime: new Date(row.startTime),
           endTime: new Date(row.endTime),
-          description: row.description || null,
-          status: "CONFIRMED",
+          user: row.user || null,
+          // status: 'CONFIRMED'
         };
       });
-      if (csvData.some((item) => item.error == true)) {
+      if (csvData.some((item) => item.error)) {
         setError("Some Fields are Empty");
         setIsUploading(false);
         return;
       }
       setError("");
-      // console.log(uploadData);
+      console.log("uploadData", uploadData);
 
-      const response = await fetch("/api/uploadCsv", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          data: uploadData,
-          info: {
-            type: "FORCE",
-            universityId: 1,
-            facilityId: 1,
+      const uploadBatch = async (batch: object) => {
+        const response = await fetch("/api/uploadCsv", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        }),
-      });
+          body: JSON.stringify({
+            data: batch,
+            info: {
+              type: "COURSE",
+              universityId: 1,
+              facilityId: 1,
+            },
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error("Failed to upload data");
+        if (!response.ok) {
+          throw new Error("Failed to upload data");
+        }
+      };
+
+      setError('Uploading to Server. This may take a while...');
+      const chunkSize = 200;
+      for (let i = 0; i < uploadData.length; i += chunkSize) {
+        console.log(`start batch: ${i}-${i + chunkSize}`);
+        setError(`Uploading to Server... [${i}-${i + chunkSize}/${uploadData.length}]`);
+        const chunk = uploadData.slice(i, i + chunkSize);
+        await uploadBatch(chunk);
+        console.log('batch completed');
       }
 
       window.alert("Data upload successful! Reloading the page...");
-      window.location.reload();
-    } catch (error) {
-      console.error("Error uploading data:", error);
+      // window.location.reload();
+    } catch (err) {
+        setError('Unknown Error: ' + err);
+      console.error("Error uploading data:", err);
     }
+  };
+
+  //   const repeatSchedules = (data: CsvData[]) => {
+  //     const repeatedData: CsvData[] = [];for (
+  //         let date = new Date(startDate);
+  //         date <= endOfRepeatDate;
+  //         date = addDays(date, 7)
+  //       ) {
+  //     data.forEach((row) => {
+  //       const startDate = new Date(row.day + " " + row.startTime);
+  //       const endDate = new Date(row.day + " " + row.endTime);
+  //       const endOfRepeatDate = new Date(endOfRepeat);
+
+  //         const newStartTime = new Date(date);
+  //         const newEndTime = new Date(date);
+  //         newEndTime.setHours(endDate.getHours());
+  //         newEndTime.setMinutes(endDate.getMinutes());
+
+  //         repeatedData.push({
+  //           ...row,
+  //           startTime: newStartTime.toISOString(),
+  //           endTime: newEndTime.toISOString(),
+  //         });
+  //     });
+
+  //     return repeatedData;
+  //   };
+  const repeatSchedules = (data: CsvData[]) => {
+    const repeatedData: CsvData[] = [];
+    data.forEach((row) => {
+
+      const startOfRepeatDate = new Date(startOfRepeat);
+      const endOfRepeatDate = new Date(endOfRepeat);
+
+      // const firstDate = new Date(startOfRepeatDate);
+      // const targetDay = convertDays[row.day as keyof typeof convertDays];
+      // const daysToAdd = (targetDay - firstDate.getDay() + 7) % 7;
+      // firstDate.setDate(firstDate.getDate() + daysToAdd);
+      // console.log("new row:", firstDate, targetDay, firstDate)
+      
+      const startDate = new Date(row.firstDate + " " + row.startTime);
+      const endDate = new Date(row.firstDate + " " + row.endTime);
+
+      for (
+        let date = new Date(startDate);
+        date <= endOfRepeatDate;
+        date = addDays(date, 7)
+      ) {
+        const newStartTime = new Date(date);
+        const newEndTime = new Date(date);
+        newEndTime.setHours(endDate.getHours());
+        newEndTime.setMinutes(endDate.getMinutes());
+
+        repeatedData.push({
+          ...row,
+          startTime: newStartTime.toISOString(),
+          endTime: newEndTime.toISOString(),
+        });
+      }
+    });
+    return repeatedData;
   };
 
   return (
     <div id="app" className="flex flex-col h-screen bg-white text-black">
       <header className="sticky top-0 left-0 z-40 w-full flex items-center justify-between bg-white px-4 py-4 shadow">
-        <h1 className="font-bold">Forest Gateway 空き教室（予定の登録）</h1>
+        <h1 className="font-bold">
+          Forest Gateway 空き教室（繰り返し予定の登録）
+        </h1>
         <button
           className="cursor-pointer bg-gray-200 hover:bg-white text-gray-800 px-4 py-2 rounded shadow"
           onClick={() => {
@@ -308,22 +407,21 @@ export default function BatchReservations() {
             className="block mb-2 text-normal font-medium text-gray-900 dark:text-white"
             htmlFor="file_input"
           >
-            Upload file (CSV): 最大２００件
+            Upload file (CSV):　　200 件/分（繰返分を含む）
           </label>
           <input
             className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
             id="file_input"
             type="file"
             accept=".csv"
-            // accept=".csv, .xlsx, .xls"
             onChange={handleFileChange}
           />
           <p
             id="file_input_help"
             className="mt-1 text-sm text-gray-500 dark:text-gray-300"
           >
-            Required Fields: Title, Type, Room, Start Date&Time, End Date&Time
-            (Optional: User, Description)
+            Required Fields: Title, Type, Start Time, End Time, Room (Optional:
+            User, Description)
           </p>
         </div>
         {headerMapDialog && (
@@ -335,6 +433,26 @@ export default function BatchReservations() {
               <div className="relative p-4 w-full max-w-2xl h-full">
                 <div className="relative bg-white rounded-lg shadow dark:bg-gray-700 max-h-full overflow-hidden flex flex-col">
                   <div className="relative p-5 overflow-y-scroll">
+                    <h3 className="mb-2 text-lg text-green-600 font-medium dark:text-white">
+                      Set Start Date of Repeat
+                    </h3>
+                    <input
+                      type="date"
+                      id="day"
+                      value={startOfRepeat}
+                      onChange={(e) => setStartOfRepeat(e.target.value)}
+                      className="mb-6 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    />
+                    <h3 className="mb-2 text-lg text-red-600 font-medium dark:text-white">
+                      Set End Date of Repeat
+                    </h3>
+                    <input
+                      type="date"
+                      id="endOfRepeat"
+                      value={endOfRepeat}
+                      onChange={(e) => setEndOfRepeat(e.target.value)}
+                      className="mb-6 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    />
                     <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">
                       Map CSV Headers
                     </h3>
@@ -345,7 +463,7 @@ export default function BatchReservations() {
                             htmlFor={expectedHeader}
                             className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                           >
-                            {expectedHeaders[expectedHeader]}
+                            {expectedHeaders[expectedHeader][0]}
                           </label>
                           <select
                             id={expectedHeader}
@@ -385,7 +503,7 @@ export default function BatchReservations() {
                 </div>
               </div>
             </div>
-            <div className="fixed inset-0 z-40 width-vw height-vh bg-black/50"></div>
+            <div className="fixed inset-0 z-40 bg-black/50"></div>
           </div>
         )}
         {csvData.length > 0 && (
@@ -412,6 +530,45 @@ export default function BatchReservations() {
                 </div>
               </div>
               <div className="mb-4 bg-white shadow rounded-lg overflow-y-scroll">
+
+              <div className="text-red-500 mb-2">{error}</div>
+              {isUploading ? (
+                <button
+                  type="button"
+                  className="flex items-center justify-center py-2.5 px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                >
+                  <div role="status">
+                    <svg
+                      aria-hidden="true"
+                      className="w-6 h-6 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
+                      viewBox="0 0 100 101"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                        fill="currentColor"
+                      />
+                      <path
+                        d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                        fill="currentFill"
+                      />
+                    </svg>
+                    <span className="sr-only">Loading...</span>
+                  </div>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="py-2.5 px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                  onClick={handleUpload}
+                >
+                  Upload Data
+                  <span className="inline-flex items-center justify-center w-4 h-4 ms-2 text-xs font-semibold text-blue-800 bg-blue-200 rounded-full">
+                    {csvData.length}
+                  </span>
+                </button>
+              )}
                 <table className="min-w-full divide-y divide-gray-200 text-left">
                   <thead className="bg-gray-50">
                     <tr>
@@ -435,10 +592,14 @@ export default function BatchReservations() {
                       <th className="px-3 py-1 whitespace-nowrap">Title</th>
                       <th className="px-3 py-1 whitespace-nowrap">Type</th>
                       <th className="px-3 py-1 whitespace-nowrap">Room</th>
+                      <th className="px-3 py-1 whitespace-nowrap">Start Day</th>
                       <th className="px-3 py-1 whitespace-nowrap">
                         Start Time
                       </th>
                       <th className="px-3 py-1 whitespace-nowrap">End Time</th>
+                      {/* <th className="px-3 py-1 whitespace-nowrap">
+                        End of Repeat
+                      </th> */}
                       <th className="px-3 py-1 whitespace-nowrap">User</th>
                       <th className="px-3 py-1 whitespace-nowrap"></th>
                     </tr>
@@ -478,13 +639,21 @@ export default function BatchReservations() {
                           {row.room}
                         </td>
                         <td className="px-3 py-1 whitespace-nowrap">
-                          {/* {row.startTime} */}
-                          {format(row.startTime, "yyyy/MM/dd (EEE) HH:mm")}
+                          {format(row.firstDate, "yyyy/MM/dd (EEE)")}
                         </td>
                         <td className="px-3 py-1 whitespace-nowrap">
-                          {/* {row.endTime} */}
-                          {format(row.endTime, "yyyy/MM/dd (EEE) HH:mm")}
+                          {/* {toTimeInputValue(row.startTime)} */}
+                          {/* {format(row.startTime, "yyyy/MM/dd (EEE) HH:mm")} */}
+                          {row.startTime}
                         </td>
+                        <td className="px-3 py-1 whitespace-nowrap">
+                          {/* {toTimeInputValue(row.endTime)} */}
+                          {/* {format(row.endTime, "yyyy/MM/dd (EEE) HH:mm")} */}
+                          {row.endTime}
+                        </td>
+                        {/* <td className="px-3 py-1 whitespace-nowrap">
+                          {format(row.endOfRepeat, "yyyy/MM/dd (EEE)")}
+                        </td> */}
                         <td className="px-3 py-1 whitespace-nowrap">
                           {row.user}
                         </td>
@@ -507,44 +676,6 @@ export default function BatchReservations() {
                   </tbody>
                 </table>
               </div>
-              <div className="text-red-500 mb-2">{error}</div>
-              {isUploading ? (
-                <button
-                  type="button"
-                  className="flex items-center justify-center py-2.5 px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                >
-                  <div role="status">
-                    <svg
-                      aria-hidden="true"
-                      className="w-6 h-6 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
-                      viewBox="0 0 100 101"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                        fill="currentColor"
-                      />
-                      <path
-                        d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                        fill="currentFill"
-                      />
-                    </svg>
-                    <span className="sr-only">Loading...</span>
-                  </div>
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="py-2.5 px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                  onClick={handleUpload}
-                >
-                  Upload Data
-                  <span className="inline-flex items-center justify-center w-4 h-4 ms-2 text-xs font-semibold text-blue-800 bg-blue-200 rounded-full">
-                    {csvData.length}
-                  </span>
-                </button>
-              )}
             </div>
           </>
         )}
@@ -594,7 +725,7 @@ export default function BatchReservations() {
                     </div>
                     <div>
                       <label
-                        htmlFor="title"
+                        htmlFor="type"
                         className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                       >
                         Type
@@ -605,7 +736,7 @@ export default function BatchReservations() {
                         value={selectedData.type as string | ""}
                         onChange={handleValueChange}
                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        placeholder="Title of Schedule"
+                        placeholder="Type of Schedule"
                         required
                       />
                     </div>
@@ -634,7 +765,7 @@ export default function BatchReservations() {
                         Start Time
                       </label>
                       <input
-                        type="datetime-local"
+                        type="time"
                         id="startTime"
                         value={selectedData.startTime}
                         onChange={handleValueChange}
@@ -650,12 +781,43 @@ export default function BatchReservations() {
                         End Time
                       </label>
                       <input
-                        type="datetime-local"
+                        type="time"
                         id="endTime"
                         value={selectedData.endTime}
                         onChange={handleValueChange}
                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        placeholder="Name of User"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="day"
+                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                      >
+                        Day
+                      </label>
+                      <input
+                        type="date"
+                        id="day"
+                        value={selectedData.day}
+                        onChange={handleValueChange}
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="endOfRepeat"
+                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                      >
+                        End of Repeat
+                      </label>
+                      <input
+                        type="date"
+                        id="endOfRepeat"
+                        value={selectedData.endOfRepeat}
+                        onChange={handleValueChange}
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         required
                       />
                     </div>
@@ -676,7 +838,7 @@ export default function BatchReservations() {
                       placeholder="Description of Schedule"
                     />
                   </div>
-                  {popupMessage != "" && (
+                  {popupMessage !== "" && (
                     <a className="text-red-500">{`Empty Field(s): ${popupMessage}`}</a>
                   )}
                 </div>

@@ -97,13 +97,14 @@ const fetchRoomByFacility = async (facilityId: number) => {
 const fetchResvByRoom = async (facilityId: number) => {
     // console.log(todayStr);
     const now = new Date();
-    console.log(now);
+    // console.log(now);
     let today = new Date(now.toLocaleString('en-US', {timeZone: 'Asia/Tokyo'}));
     today.setHours(0,0,0,0);
     console.log(today);
 
     const nextWeek = new Date(today);
     nextWeek.setDate(today.getDate() + 7);
+    console.log(nextWeek);
 
     const rooms = await fetchRoomByFacility(facilityId);
 
@@ -122,6 +123,7 @@ const fetchResvByRoom = async (facilityId: number) => {
             endTime: true,
         },
     });
+    console.log("reservations", reservations);
 
 
     let availability: AvailabilityRoom = {};
@@ -185,21 +187,21 @@ const fetchResvByRoom = async (facilityId: number) => {
 
 
 
-export async function POST(req: Request) {
-    try {
-        const data: any = await req.json();
-        const { facilityId } = data;
+// export async function POST(req: Request) {
+//     try {
+//         const data: any = await req.json();
+//         const { facilityId } = data;
 
-        const { availabilityAll, rooms } = await fetchResvByRoom(facilityId);
+//         const { availabilityAll, rooms } = await fetchResvByRoom(facilityId);
 
-        return NextResponse.json({ ok: true, availabilityAll, rooms }, { status: 200 });
-    } catch (err) {
-        console.error('Error fetching room availability:', err);
-        return NextResponse.json({ ok: false, message: err }, { status: 500 });
-    } finally {
-        await prisma.$disconnect();
-    }
-}
+//         return NextResponse.json({ ok: true, availabilityAll, rooms }, { status: 200 });
+//     } catch (err) {
+//         console.error('Error fetching room availability:', err);
+//         return NextResponse.json({ ok: false, message: err }, { status: 500 });
+//     } finally {
+//         await prisma.$disconnect();
+//     }
+// }
 
 export async function GET(req: NextRequest) {
     try {

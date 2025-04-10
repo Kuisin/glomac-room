@@ -241,7 +241,7 @@ export default function CourseDataUpload() {
       for (let i = 0; i < repeatedData.length; i += chunkSize) {
         console.log(`start batch: ${i}-${i + chunkSize}`);
         setError(
-          `Uploading to Server... [${i}-${i + chunkSize}/${
+          `Uploading to Server... [${i}-${Math.min(i + chunkSize, repeatedData.length)}/${
             repeatedData.length
           }]`
         );
@@ -251,7 +251,7 @@ export default function CourseDataUpload() {
       }
 
       window.alert("Data upload successful! Reloading the page...");
-      // window.location.reload();
+      window.location.reload();
     } catch (err) {
       setError("Unknown Error: " + err);
       console.error("Error uploading data:", err);

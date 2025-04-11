@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { sendEmail } from "@/utils/sendEmail";
 export const maxDuration = 60;
 
 const prisma = new PrismaClient();
@@ -83,7 +84,7 @@ export async function POST(req: Request) {
       today.setHours(0, 0, 0, 0);
       today.setMinutes(today.getMinutes() - 9 * 60);
 
-      if (info.type === "force") {
+      if (info.type === "FORCE") {
         const rooms = await prisma.room.findMany({
           where: { facilityId: facility.id },
           select: { id: true },
@@ -99,6 +100,58 @@ export async function POST(req: Request) {
             },
           },
         });
+      } else if (info.type === "COURSE") {
+        const emailSubject = "New Course Reservations Added";
+        const emailText = `New course reservations have been added to the system.`;
+        
+        // Format reservations for the email
+        const reservationsTable = reservations.map(res => `
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 8px;">${res.title}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">${res.roomId}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">${new Date(res.startTime).toLocaleString('ja-JP')}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">${new Date(res.endTime).toLocaleString('ja-JP')}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">${res.group || 'N/A'}</td>
+          </tr>
+        `).join('');
+
+        const emailHtml = `
+          <h2>New Course Reservations Added</h2>
+          <p>New course reservations have been added to the system with the following details:</p>
+          <ul>
+            <li>Number of reservations: ${reservations.length}</li>
+            <li>University: ${university.name}</li>
+            <li>Facility: ${facility.name}</li>
+          </ul>
+          
+          <h3>Reservation Details:</h3>
+          <table style="border-collapse: collapse; width: 100%; margin-top: 10px;">
+            <thead>
+              <tr style="background-color: #f2f2f2;">
+                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Title</th>
+                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Room</th>
+                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Start Time</th>
+                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">End Time</th>
+                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Group</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${reservationsTable}
+            </tbody>
+          </table>
+          
+          <p style="margin-top: 20px;">Please review the reservations in the admin panel.</p>
+        `;
+        
+        await sendEmail(
+          "Reservation System",
+          ["a22.y7ff@g.chuo-u.ac.jp"],
+          emailSubject,
+          emailText,
+          emailHtml
+        );
+      } else {
+        throw new Error("unknown type");
       }
 
       createdReservations = await prisma.resv.createMany({

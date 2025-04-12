@@ -30,7 +30,7 @@ export const convertTimestampAdv = (timestamp: string) => {
 }
 
 export const toTimeInputValue = (time: string) => {
-    const splitTime = time.split(' ');
+    const splitTime = time.toString().trim().split(':');
 
     let hours: string;
     let minutes: string;

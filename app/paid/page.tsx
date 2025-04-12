@@ -475,7 +475,7 @@ export default function Home() {
         setAvailability(data.availabilityAll);
         setRooms(data.rooms);
         setRoomsById(data.roomsById);
-        
+
         console.log(data);
         setIsLoading(false);
       }
@@ -554,7 +554,7 @@ export default function Home() {
                 </div>
                 <div className="flex flex-col gap-2 mx-3">
                   <div className="grid grid-cols-12 gap-4  text-center text-gray-800 font-bold">
-                    <div className="col-span-3 truncate">
+                    <div className="col-span-3 text-left truncate">
                       {showPopup.slice(0, 5) == "Floor"
                         ? lang === "ja"
                           ? "教室"
@@ -567,10 +567,10 @@ export default function Home() {
                         ? "Type"
                         : ""}
                     </div>
-                    <div className="col-span-2">
+                    <div className="col-span-2 text-right">
                       {lang === "ja" ? "開始" : lang === "en" ? "Start" : ""}
                     </div>
-                    <div className="col-span-2">
+                    <div className="col-span-2 text-right">
                       {lang === "ja" ? "終了" : lang === "en" ? "End" : ""}
                     </div>
                     <div className="col-span-5 truncate">
@@ -600,7 +600,7 @@ export default function Home() {
                           className="grid grid-cols-12 gap-4 pb-1 text-center text-gray-600 relative group"
                         >
                           {/* <div className="col-span-3 truncate">{resv.type}</div> */}
-                          <div className="col-span-3 truncate">
+                          <div className="col-span-3 truncate text-left">
                             {showPopup.slice(0, 5) == "Floor"
                               ? roomsById[resv.roomId].name
                               : convertType(resv.type, lang)}
@@ -615,9 +615,19 @@ export default function Home() {
                             {resv.title}
                           </div>
 
-                          <div className="absolute left-0 top-0 transform translate-y-[-100%] hidden group-hover:block bg-gray-200 text-black text-xs rounded py-1 px-2 whitespace-nowrap z-50">
-                              {resv.title}
-                            </div>
+                          <div className="absolute transform translate-y-7 right-0 hidden group-hover:flex flex-col items-end bg-gray-200 text-black text-xs rounded py-1 px-2 whitespace-nowrap z-50">
+                            <span className="font-bold">
+                              {format(resv.startTime, "yyyy/MM/dd　H:mm")} -{" "}
+                              {format(resv.endTime, "H:mm")}
+                            </span>
+                            <span className="text-xs">
+                              {resv.type}　@{roomsById[resv.roomId].name}
+                            </span>
+                            <span className="text-xs">{resv.status}</span>
+                            <span className="text-xs">{resv.title}</span>
+                            <span className="text-xs">{resv.description}</span>
+                            <span className="text-xs">{resv.userId}</span>
+                          </div>
                         </div>
                       ))}
                     </>

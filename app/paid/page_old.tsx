@@ -1,16 +1,41 @@
 "use client";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
-import moment from "moment-timezone";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { config } from "@fortawesome/fontawesome-svg-core";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 config.autoAddCss = false;
 import { library } from "@fortawesome/fontawesome-svg-core";
-import { faXmark, fas } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCalendarDays,
+  faHouse,
+  faRepeat,
+  faXmark,
+  fas,
+} from "@fortawesome/free-solid-svg-icons";
 library.add(fas);
-// update
+
+// type RoomProps = {
+//   floor?: string;
+//   name: string;
+//   open: boolean;
+// };
+type RoomProps = {
+  floor?: string;
+  name: string;
+  open: boolean;
+  setSelectedResvs: (reservationIds: any) => void;
+  setShowPopup: (show: string) => void;
+  reservationIds: any; // Adjust the type as needed
+};
+
+type FloorProps = {
+  floor: string;
+  rooms: RoomProps[];
+  setSelectedResvs: (reservationIds: any) => void;
+  setShowPopup: (show: string) => void;
+};
 
 type Language = {
   id: string;
@@ -63,9 +88,9 @@ const closedBg = "bg-gray-200";
 const openText = "text-green-800";
 const closedText = "text-gray-800";
 
-const feedbackFormUrl = "https://forms.gle/ZaPPf6GbmhM3HqyX6";
+const feedbackFormUrl = "google.com";
 
-const Footer = ({ lang }: { lang: string }) => {
+const Description = ({ lang }: { lang: string }) => {
   return (
     <div className="py-6">
       {/* <h2 className="font-semibold">凡例</h2> */}
@@ -147,7 +172,7 @@ const FooterButton = ({
   return (
     <button
       className={`py-2 rounded ${
-        selected ? `px-1 ${openBg}` : "px-1 hover:bg-gray-200"
+        selected ? `px-1 ${openBg}` : "px-0.5 hover:bg-gray-200"
       }`}
       onClick={action}
     >
@@ -223,34 +248,32 @@ const periodTimes = [
 const Room = ({
   name,
   open,
-  reservationIds,
   setSelectedResvs,
   setShowPopup,
-}: {
-  name: string;
-  open: boolean;
-  reservationIds: number[];
-  setSelectedResvs: (reservationIds: number[]) => void;
-  setShowPopup: (show: string) => void;
-}) => {
-  const handleClick = async (open: boolean) => {
+  reservationIds,
+}: RoomProps) => {
+  const handleClick = (open: boolean) => {
     if (open) return setShowPopup("");
     setShowPopup("loading");
 
-    const result = await fetch("/api/getResv", {
+    let resvData: any = [];
+    fetch("/api/getResv", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ reservationIds }),
-    });
-    const data = await result.json();
-    if (data.ok) {
-      setSelectedResvs(data.reservations);
-      setShowPopup(name);
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.ok) {
+          resvData = data.reservations;
+          setSelectedResvs(resvData);
+          setShowPopup(name);
+        }
 
-      console.log(data);
-    }
+        console.log(data);
+      });
   };
 
   return (
@@ -268,45 +291,36 @@ const Room = ({
   );
 };
 
-type FloorProps = {
-  floor: string;
-  rooms: {
-    name: string;
-    open: boolean;
-    reservationIds: number[];
-  }[];
-  setSelectedResvs: (reservationIds: number[]) => void;
-  setShowPopup: (show: string) => void;
-};
 const Floor = ({
   floor,
   rooms,
   setSelectedResvs,
   setShowPopup,
 }: FloorProps) => {
-  const handleFloorClick = async () => {
+  const handleFloorClick = () => {
     setShowPopup("loading");
     let floorReservationIds = rooms.flatMap((room) => room.reservationIds);
 
     if (floorReservationIds.length == 0) {
-      setShowPopup("");
+      setShowPopup('');
       return;
     }
 
-    const result = await fetch("/api/getResv", {
+    fetch("/api/getResv", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ reservationIds: floorReservationIds }),
-    });
-    const data = await result.json();
-    if (data.ok) {
-      setSelectedResvs(data.reservations);
-      setShowPopup(`Floor ${floor}`);
-
-      console.log(data);
-    }
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.ok) {
+          setSelectedResvs(data.reservations);
+          setShowPopup(`Floor ${floor}`);
+        }
+        // console.log(data);
+      });
   };
 
   return (
@@ -317,13 +331,14 @@ const Floor = ({
       >
         {floor}
       </button>
-      {rooms.map((room) => (
+      {rooms.map((room: RoomProps) => (
         <Room
           key={`${floor}-${room.name}`}
+          floor={floor}
           name={room.name}
           open={room.open}
-          setSelectedResvs={setSelectedResvs}
-          setShowPopup={setShowPopup}
+          setSelectedResvs={room.setSelectedResvs}
+          setShowPopup={room.setShowPopup}
           reservationIds={room.reservationIds}
         />
       ))}
@@ -346,7 +361,6 @@ const Floors = ({
 }) => {
   const { dateStr } = toDT(day, periodNo);
   const currentSelection = availability[dateStr][periodNo];
-  // console.log(dateStr);
   // console.log(availability);
 
   return (
@@ -354,26 +368,23 @@ const Floors = ({
       {Object.keys(currentSelection)
         .sort((a, b) => b.localeCompare(a))
         .map((fKey: string) => {
-          const floorData: {
-            name: string;
-            open: boolean;
-            reservationIds: number[];
-          }[] = Object.keys(currentSelection[fKey])
+          const floorData: any = Object.keys(currentSelection[fKey])
             .map((rKey: string) => {
               const data = {
-                name: rKey,
+                name: rKey.trim(),
                 open: currentSelection[fKey][rKey].open,
                 reservationIds: currentSelection[fKey][rKey].reservationIds,
+                setSelectedResvs,
+                setShowPopup,
               };
               return data;
             })
             .sort((a, b) => a.name.localeCompare(b.name));
 
-          // console.log(day, periodNo, floorData);
           return (
             <Floor
               key={fKey}
-              floor={fKey}
+              floor={fKey.trim()}
               rooms={floorData}
               setSelectedResvs={setSelectedResvs}
               setShowPopup={setShowPopup}
@@ -387,23 +398,10 @@ const Floors = ({
 const toDT = (day: number, period: number) => {
   const date = new Date();
   date.setDate(date.getDate() + ((day + 8 - date.getDay()) % 7));
-  const dateStr = format(date, "yyy-MM-dd");
+  const dateStr = format(date, "yyyy-MM-dd");
   const timeStr =
     periodTimes[period].startTime + "-" + periodTimes[period].endTime;
   return { dateStr, timeStr };
-};
-
-const convertType = (type: string, lang: string) => {
-  if (type == "COURSE") {
-    if (lang == "ja") return "授業等";
-    if (lang == "en") return "Course";
-  } else if (type == "FORCE") {
-    if (lang == "ja") return "事務室";
-    if (lang == "en") return "Office";
-  } else {
-    if (lang == "ja") return "その他";
-    if (lang == "en") return "Other";
-  }
 };
 
 export default function Home() {
@@ -422,16 +420,17 @@ export default function Home() {
 
   const [language, setLanguage] = useState<Language>(languages[0]);
   const [lang, setLang] = useState<string>(languages[0].id);
+
   const [showList, setShowList] = useState<boolean>(false);
+  const [showPopup, setShowPopup] = useState<string>("");
+  const [selectedResv, setSelectedResvs] = useState<any[]>([]);
+
   const [selectedDay, setSelectedDay] = useState<number>(0);
   const [selectedPeriod, setSelectedPeriod] = useState<number>(0);
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [availability, setAvailability] = useState<any>({});
   const [rooms, setRooms] = useState<any>([]);
-  const [roomsById, setRoomsById] = useState<any>({});
-  const [selectedResvs, setSelectedResvs] = useState<any>([]);
-  const [showPopup, setShowPopup] = useState<string>("");
 
   const changeLanguage = () => {
     setLanguage((prevLanguage) => {
@@ -445,43 +444,37 @@ export default function Home() {
     });
   };
 
+  const convertType = (type: string, lang: string) => {
+    if (type == 'COURSE') {
+      if (lang == 'ja') return '授業等';
+      if (lang == 'en') return 'Course';
+    } else if (type == 'FORCE') {
+      if (lang == 'ja') return '事務室';
+      if (lang == 'en') return 'Office';
+    } else {
+      if (lang == 'ja') return 'その他';
+      if (lang == 'en') return 'Other';
+    }
+  }
+
   useEffect(() => {
-    const handleGetOpenByPeriods = async () => {
-      const date = new Date();
-      const day = (date.getDay() - 1) % 7 || 0;
+    fetch(`/api/getOpenByPeriods?facilityId=${1}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.ok) {
+          setAvailability(data.availabilityAll);
+          setRooms(data.rooms);
 
-      let period = 0;
-      const currentTime = moment.tz("Asia/Tokyo").format("HH:mm:ss");
-      for (var i = 0; i < periodTimes.length; i++) {
-        const endTime = moment(periodTimes[i].endTime, "HH:mm:ss");
-
-        if (moment(currentTime, "HH:mm:ss").isBefore(endTime, "minute")) {
-          period = i;
-          break;
+          setSelectedDay(data.now.day);
+          setSelectedPeriod(data.now.period);
+          setIsLoading(false);
         }
-      }
-
-      setSelectedDay(day);
-      setSelectedPeriod(period);
-
-      const result = await fetch(`/api/getOpenByPeriods?facilityId=${1}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
       });
-      const data = await result.json();
-      if (data.ok) {
-        setAvailability(data.availabilityAll);
-        setRooms(data.rooms);
-        setRoomsById(data.roomsById);
-        
-        console.log(data);
-        setIsLoading(false);
-      }
-    };
-
-    handleGetOpenByPeriods();
   }, []);
 
   return (
@@ -491,7 +484,14 @@ export default function Home() {
     >
       <header className="sticky top-0 left-0 z-50 w-full flex justify-center bg-white px-4 py-4 shadow">
         <div className="w-full max-w-lg flex flex-row items-center justify-between">
-          <h1 className="font-bold">roomie - Forest Gateway Chuo</h1>
+          <h1 className="font-bold">
+            Forest Gateway
+            {lang === "ja"
+              ? " 空き教室"
+              : lang === "en"
+              ? " - Availability"
+              : ""}
+          </h1>
           <button
             className="bg-gray-200 text-gray-800 px-2 py-2 rounded shadow"
             style={{ cursor: "pointer" }}
@@ -533,6 +533,7 @@ export default function Home() {
               )}
             </div>
           </div>
+
           {showPopup != "" && (
             <>
               <div className="relative mx-4 my-4 p-2 min-w-64 max-w-lg border border-gray-400 text-gray-800 rounded">
@@ -553,7 +554,7 @@ export default function Home() {
                   </a>
                 </div>
                 <div className="flex flex-col gap-2 mx-3">
-                  <div className="grid grid-cols-12 gap-4  text-center text-gray-800 font-bold">
+                  <div className="grid grid-cols-12 gap-4  text-center text-gray-800">
                     <div className="col-span-3 truncate">
                       {showPopup.slice(0, 5) == "Floor"
                         ? lang === "ja"
@@ -594,30 +595,26 @@ export default function Home() {
                     </div>
                   ) : (
                     <>
-                      {selectedResvs.map((resv: any) => (
+                      {selectedResv.map((resv) => (
                         <div
                           key={resv.id}
-                          className="grid grid-cols-12 gap-4 pb-1 text-center text-gray-600 relative group"
+                          className="grid grid-cols-12 gap-4 pb-1 text-center text-gray-600"
                         >
                           {/* <div className="col-span-3 truncate">{resv.type}</div> */}
                           <div className="col-span-3 truncate">
                             {showPopup.slice(0, 5) == "Floor"
-                              ? roomsById[resv.roomId].name
+                              ? rooms[resv.roomId].name
                               : convertType(resv.type, lang)}
                           </div>
-                          <div className="col-span-2 text-right">
+                          <div className="col-span-2">
                             {format(resv.startTime, "H:mm")}
                           </div>
-                          <div className="col-span-2 text-right">
+                          <div className="col-span-2">
                             {format(resv.endTime, "H:mm")}
                           </div>
                           <div className="col-span-5 truncate">
                             {resv.title}
                           </div>
-
-                          <div className="absolute left-0 top-0 transform translate-y-[-100%] hidden group-hover:block bg-gray-200 text-black text-xs rounded py-1 px-2 whitespace-nowrap z-50">
-                              {resv.title}
-                            </div>
                         </div>
                       ))}
                     </>
@@ -627,7 +624,7 @@ export default function Home() {
             </>
           )}
         </div>
-        <Footer lang={lang} />
+        <Description lang={lang} />
       </main>
       <footer className="flex justify-center sticky bottom-0 left-0 ">
         <div className="w-full max-w-lg">
@@ -709,7 +706,10 @@ export default function Home() {
                             : ""
                           ).substring(0, 1)}
                           selected={selectedDay == index}
-                          action={() => setSelectedDay(index)}
+                          action={() => {
+                            setSelectedDay(index);
+                            setShowPopup("");
+                          }}
                         />
                       ))}
                     </div>
@@ -725,7 +725,10 @@ export default function Home() {
                             : ""
                           ).substring(0, 1)}
                           selected={selectedPeriod == index}
-                          action={() => setSelectedPeriod(index)}
+                          action={() => {
+                            setSelectedPeriod(index);
+                            setShowPopup("");
+                          }}
                         />
                       ))}
                     </div>
@@ -789,6 +792,7 @@ export default function Home() {
                       onClick={() => {
                         setSelectedPeriod(pIndex);
                         setSelectedDay(dIndex);
+                        setShowPopup("");
                       }}
                     >
                       {dValue[lang === "ja" ? 0 : lang === "en" ? 1 : 0] +
@@ -799,7 +803,7 @@ export default function Home() {
                 )}
               </div>
             )}
-            <div className="mt-4 mb-2 text-center text-xs">
+            <div className="mt-3 mb-2 text-center text-xs">
               Developed for GLOMAC
             </div>
           </div>

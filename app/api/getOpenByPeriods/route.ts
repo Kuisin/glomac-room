@@ -91,7 +91,14 @@ const fetchRoomByFacility = async (facilityId: number) => {
         },
         select: { id: true, floor: true, name: true },
     });
-    return rooms;
+    
+    // Convert array to object with id as key
+    const roomsById = rooms.reduce((acc, room) => {
+        acc[room.id] = room;
+        return acc;
+    }, {} as Record<number, typeof rooms[0]>);
+    
+    return { rooms, roomsById };
 }
 
 const fetchResvByRoom = async (facilityId: number) => {
@@ -106,7 +113,7 @@ const fetchResvByRoom = async (facilityId: number) => {
     nextWeek.setDate(today.getDate() + 7);
     console.log(nextWeek);
 
-    const rooms = await fetchRoomByFacility(facilityId);
+    const { rooms, roomsById } = await fetchRoomByFacility(facilityId);
 
     const availabilityAll: AvailabilityFac = {};
     let reservations = await prisma.resv.findMany({
@@ -145,12 +152,13 @@ const fetchResvByRoom = async (facilityId: number) => {
                         const resvStart = new Date(resv.startTime);
                         const resvEnd = new Date(resv.endTime);
 
-                        const used = resv.roomId == room.id && (
-                            (resvStart <= periodStart && resvEnd >= periodEnd) ||
-                            (resvStart >= periodStart && resvEnd <= periodEnd) ||
-                            (resvStart <= periodStart && resvEnd > periodStart) ||
-                            (resvStart < periodEnd && resvEnd >= periodEnd)
-                        )
+                        // const used = resv.roomId == room.id && (
+                        //     (resvStart <= periodStart && resvEnd >= periodEnd) ||
+                        //     (resvStart >= periodStart && resvEnd <= periodEnd) ||
+                        //     (resvStart <= periodStart && resvEnd > periodStart) ||
+                        //     (resvStart < periodEnd && resvEnd >= periodEnd)
+                        // )
+                        const used = resv.roomId == room.id && (resvStart < periodEnd && resvEnd > periodStart);
 
                         // console.log(resv.id, periodStart, periodEnd, resvStart, resvEnd, used);
                         return used;
@@ -182,7 +190,7 @@ const fetchResvByRoom = async (facilityId: number) => {
     }
 
     // console.log(availabilityAll);
-    return { availabilityAll, rooms };
+    return { availabilityAll, rooms, roomsById };
 }
 
 
@@ -208,7 +216,7 @@ export async function GET(req: NextRequest) {
         const facilityId = parseInt(req.nextUrl.searchParams.get("facilityId") || '0', 10);
         if (facilityId == 0) return NextResponse.json({ ok: false, message: 'cannot find facility' }, { status: 500 });
 
-        const { availabilityAll, rooms } = await fetchResvByRoom(facilityId);
+        const { availabilityAll, rooms, roomsById } = await fetchResvByRoom(facilityId);
 
         const date = new Date();
         const day = (date.getDay() - 1) % 7 || 0;
@@ -225,7 +233,7 @@ export async function GET(req: NextRequest) {
         }
         const now = {day, period};
         
-        return NextResponse.json({ ok: true, availabilityAll, rooms, now }, { status: 200 });
+        return NextResponse.json({ ok: true, availabilityAll, rooms, roomsById, now }, { status: 200 });
     } catch (err) {
         console.error('Error fetching room availability:', err);
         return NextResponse.json({ ok: false, message: err }, { status: 500 });

@@ -165,7 +165,7 @@ const days = [
   ["水", "WED"],
   ["木", "THU"],
   ["金", "FRI"],
-  // ["土", "SAT"],
+  ["土", "SAT"],
   // ['日', 'SUN'],
 ];
 
@@ -263,7 +263,7 @@ const Floors = ({
   periodNo: number;
   availability: any;
 }) => {
-  const { dateStr, timeStr } = toDT(day, periodNo);
+  const { dateStr } = toDT(day, periodNo);
   const currentSelection = availability[dateStr][periodNo];
   // console.log(availability);
   console.log(dateStr);

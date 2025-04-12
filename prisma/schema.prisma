@@ -15,7 +15,7 @@ model Resv {
   endTime     DateTime   @db.Timestamptz
   description String?
   roomId      Int
-  userId      Int?
+  userId      String?
   status      ResvStatus @default(PENDING)
   group       String?    @default("none")
   type        ResvType   @default(USER)
@@ -32,7 +32,7 @@ model University {
   id          Int              @id @default(autoincrement())
   name        String
   description String?
-  ownerId     Int
+  ownerId     String
   areas       Area[]
   Facilities  Facility[]
   rooms       Room[]
@@ -85,13 +85,13 @@ model Room {
 }
 
 model User {
-  id              Int              @id @default(autoincrement())
-  role            String
+  id              String              @id @default(uuid())
+  role            String  @default("OTHER")
   studentId       String?
   email           String?
-  lastName        String
-  firstName       String
-  displayName     String
+  lastName        String?
+  firstName       String?
+  displayName     String?
   valid           Boolean          @default(false)
   showProfile     Boolean          @default(false)
   reservations    Resv[]
@@ -100,7 +100,7 @@ model User {
 }
 
 model UserUniversity {
-  userId       Int
+  userId        String
   universityId Int
   university   University @relation(fields: [universityId], references: [id])
   user         User       @relation(fields: [userId], references: [id])

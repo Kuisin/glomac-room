@@ -63,6 +63,29 @@ export async function POST(req: Request) {
         });
       }
 
+      // Handle user creation/retrieval
+      let userId = null;
+      if (row.user) {
+        let user = await prisma.user.findFirst({
+          where: {
+            displayName: row.user.trim(),
+          },
+        });
+
+        if (!user) {
+          // Create new user if not found
+          user = await prisma.user.create({
+            data: {
+              displayName: row.user.trim(),
+              role: "UNKOWN", // Default role
+              valid: true,
+              showProfile: true,
+            },
+          });
+        }
+        userId = user.id;
+      }
+
       // Create reservation
       reservations.push({
         title: row.title || "unknow",
@@ -73,7 +96,7 @@ export async function POST(req: Request) {
         endTime,
         // status: 'CONFIRMED',
         description: row.description || null,
-        userId: row.user || null,
+        userId: userId,
       });
     }
 
@@ -84,22 +107,30 @@ export async function POST(req: Request) {
       today.setHours(0, 0, 0, 0);
       today.setMinutes(today.getMinutes() - 9 * 60);
 
+      // console.log("info.type", info.type);
       if (info.type === "FORCE") {
         const rooms = await prisma.room.findMany({
           where: { facilityId: facility.id },
           select: { id: true },
         });
         const roomIds = rooms.map((room) => room.id);
+        console.log("roomIds", roomIds);
 
-        await prisma.resv.deleteMany({
+        // Get current time in Japan timezone
+        const now = new Date();
+        const japanTime = toJapanTime(now);
+        japanTime.setHours(0, 0, 0, 0); // Set to start of day in Japan
+
+        const result = await prisma.resv.deleteMany({
           where: {
             roomId: { in: roomIds },
             type: "FORCE",
             startTime: {
-              gt: today,
+              gte: japanTime, // Use greater than or equal to include today
             },
           },
         });
+        console.log("deleted:", result);
       } else if (info.type === "COURSE") {
         const emailSubject = "New Course Reservations Added";
         const emailText = `New course reservations have been added to the system.`;

@@ -30,8 +30,18 @@ export const convertTimestampAdv = (timestamp: string) => {
 }
 
 export const toTimeInputValue = (time: string) => {
-    const hours = time.split(':')[0];
-    const minutes = time.split(':')[1];
+    const splitTime = time.split(' ');
+
+    let hours: string;
+    let minutes: string;
+    if (splitTime.length === 2) {   
+        hours = splitTime[0];
+        minutes = splitTime[1];
+    } else {
+        hours = time.slice(0, 2);
+        minutes = time.slice(2, 4);
+    }
+
     const formattedTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
     return formattedTime;
 };

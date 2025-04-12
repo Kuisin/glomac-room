@@ -36,7 +36,7 @@ const expectedHeaders: HeaderMapList = {
 };
 
 const mapHeaders = (row: CsvData, headerMap: HeaderMap): CsvData => {
-  console.log("headerMap", headerMap);
+  // console.log("headerMap", headerMap);
   const mappedRow: CsvData = {};
   for (const key in headerMap) {
     if (row[headerMap[key]] !== undefined) {
@@ -234,7 +234,7 @@ export default function BatchReservations() {
         updatedData[rowIndex] = editItem;
         setCsvData(updatedData);
 
-        console.log(editItem);
+        // console.log(editItem);
         setError("");
         setPopup(false);
       } else {
@@ -275,7 +275,7 @@ export default function BatchReservations() {
         return;
       }
       setError("");
-      // console.log(uploadData);
+      console.log(uploadData);
 
       const response = await fetch("/api/uploadCsv", {
         method: "POST",

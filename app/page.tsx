@@ -265,9 +265,8 @@ const Floors = ({
 }) => {
   const { dateStr } = toDT(day, periodNo);
   const currentSelection = availability[dateStr][periodNo];
+  // console.log(dateStr);
   // console.log(availability);
-  console.log(dateStr);
-  console.log(availability);
 
   return (
     <>
@@ -337,9 +336,6 @@ export default function Home() {
   };
 
   useEffect(() => {
-    const todayStr = format(new Date(), "yyy-MM-dd");
-    console.log(todayStr);
-
     const date = new Date();
     const day = (date.getDay() - 1) % 7 || 0;
 

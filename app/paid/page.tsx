@@ -249,7 +249,7 @@ const Room = ({
       setSelectedResvs(data.reservations);
       setShowPopup(name);
 
-      console.log(data);
+      // console.log(data);
     }
   };
 
@@ -305,7 +305,7 @@ const Floor = ({
       setSelectedResvs(data.reservations);
       setShowPopup(`Floor ${floor}`);
 
-      console.log(data);
+      // console.log(data);
     }
   };
 
@@ -476,7 +476,7 @@ export default function Home() {
         setRooms(data.rooms);
         setRoomsById(data.roomsById);
 
-        console.log(data);
+        // console.log(data);
         setIsLoading(false);
       }
     };

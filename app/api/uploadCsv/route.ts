@@ -66,7 +66,7 @@ export async function POST(req: Request) {
       // Create reservation
       reservations.push({
         title: row.title || "unknow",
-        group: row.type,
+        group: row.type || null,
         type: info.type,
         roomId: room.id,
         startTime,

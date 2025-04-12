@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Roomie (GLOMAC)",
-  description: "Developed for GLOMAC by Kaisei Sawada",
+  description: "Roomie is a comprehensive room management system developed for GLOMAC. This platform enables efficient management of room bookings, availability tracking, and facility coordination. Developed by Kaisei Sawada, it provides a seamless experience for both administrators and users.",
 };
 
 export default function RootLayout({

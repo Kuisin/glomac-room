@@ -64,11 +64,11 @@ export async function POST(req: Request) {
       }
 
       // Handle user creation/retrieval
-      let userId = null;
-      if (row.user) {
+      console.log("row.userId", row.userId);
+      if (row.userId) {
         let user = await prisma.user.findFirst({
           where: {
-            displayName: row.user.trim(),
+            id: row.userId,
           },
         });
 
@@ -76,14 +76,17 @@ export async function POST(req: Request) {
           // Create new user if not found
           user = await prisma.user.create({
             data: {
-              displayName: row.user.trim(),
+              id: row.userId, // Use the student ID as the UUID
+              studentId: row.userId,
               role: "UNKOWN", // Default role
               valid: true,
               showProfile: true,
+              lastName: "Unknown",
+              firstName: "User",
+              displayName: row.userId,
             },
           });
         }
-        userId = user.id;
       }
 
       // Create reservation
@@ -96,7 +99,7 @@ export async function POST(req: Request) {
         endTime,
         // status: 'CONFIRMED',
         description: row.description || null,
-        userId: userId,
+        userId: row.userId,
       });
     }
 

@@ -23,6 +23,12 @@ const adminList = [
     desc: "ユーザー向けのページ",
   },
   {
+    title: "Bookings List",
+    icon: faList,
+    href: "./admin/list",
+    desc: "個別予約の一覧（編集、削除、追加）",
+  },
+  {
     title: "Add Recurring Bookings",
     icon: faRepeat,
     href: "./admin/courses",
@@ -33,12 +39,6 @@ const adminList = [
     icon: faCalendarDays,
     href: "./admin/force",
     desc: "個別予約の登録",
-  },
-  {
-    title: "Bookings List",
-    icon: faList,
-    href: "./admin/list",
-    desc: "個別予約の一覧（編集、削除、追加）",
   },
 ];
 

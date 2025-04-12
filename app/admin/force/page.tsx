@@ -28,7 +28,10 @@ type HeaderMapList = { [key: string]: string[] };
 const expectedHeaders: HeaderMapList = {
   title: ["Title: 予約区分", "予約区分"],
   room: ["Room: 施設コード(01FG-0-XXX)", "施設コード"],
-  startTime: ["Start Date & Time: 予約開始日時(yyyy/MM/dd HH:mm)", "予約開始日時"],
+  startTime: [
+    "Start Date & Time: 予約開始日時(yyyy/MM/dd HH:mm)",
+    "予約開始日時",
+  ],
   endTime: ["End Date & Time: 予約終了日時(yyyy/MM/dd HH:mm)", "予約終了日時"],
   //   type: "Type",
   user: ["User", "予約者"],
@@ -170,7 +173,8 @@ export default function BatchReservations() {
           setError(error + `[Skip Row: ${index}]`);
           return null;
         }
-      }).filter(row => row !== null);
+      })
+      .filter((row) => row !== null);
     setCsvData(parsedData as CsvData[]);
     setHeaderMapDialog(false);
   };
@@ -304,18 +308,7 @@ export default function BatchReservations() {
   };
 
   return (
-    <div id="app" className="flex flex-col h-screen bg-white text-black">
-      <header className="sticky top-0 left-0 z-40 w-full flex items-center justify-between bg-white px-4 py-4 shadow">
-        <h1 className="font-bold">Forest Gateway 空き教室（予定の登録）</h1>
-        <button
-          className="cursor-pointer bg-gray-200 hover:bg-white text-gray-800 px-4 py-2 rounded shadow"
-          onClick={() => {
-            router.push("./");
-          }}
-        >
-          HOME
-        </button>
-      </header>
+    <>
       <div className="p-4">
         <div className="mb-4">
           <label
@@ -720,6 +713,6 @@ export default function BatchReservations() {
           <div className="fixed inset-0 z-40 width-vw height-vh bg-black/50"></div>
         </div>
       )}
-    </div>
+    </>
   );
 }

@@ -398,20 +398,7 @@ export default function CourseDataUpload() {
   };
 
   return (
-    <div id="app" className="flex flex-col h-screen bg-white text-black">
-      <header className="sticky top-0 left-0 z-40 w-full flex items-center justify-between bg-white px-4 py-4 shadow">
-        <h1 className="font-bold">
-          Forest Gateway 空き教室（繰り返し予定の登録）
-        </h1>
-        <button
-          className="cursor-pointer bg-gray-200 hover:bg-white text-gray-800 px-4 py-2 rounded shadow"
-          onClick={() => {
-            router.push("/admin");
-          }}
-        >
-          HOME
-        </button>
-      </header>
+    <>
       <div className="p-4">
         <div className="mb-4">
           <label
@@ -881,6 +868,6 @@ export default function CourseDataUpload() {
           <div className="fixed inset-0 z-40 width-vw height-vh bg-black/50"></div>
         </div>
       )}
-    </div>
+    </>
   );
 }

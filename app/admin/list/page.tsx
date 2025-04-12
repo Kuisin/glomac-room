@@ -209,19 +209,6 @@ export default function ListPage() {
   );
 
   return (
-    <div className="w-full">
-      <div className="flex flex-col justify-between items-center mb-4">
-        <header className="sticky top-0 left-0 z-40 w-full flex items-center justify-between bg-white px-4 py-4 shadow">
-          <h1 className="font-bold">Force Records Management</h1>
-          <button
-            className="cursor-pointer bg-gray-200 hover:bg-white text-gray-800 px-4 py-2 rounded shadow"
-            onClick={() => {
-              router.push("./");
-            }}
-          >
-            HOME
-          </button>
-        </header>
         <div className="px-4 flex flex-col">
           <button
             onClick={() => {
@@ -448,7 +435,5 @@ export default function ListPage() {
             </div>
           )}
         </div>
-      </div>
-    </div>
   );
 }

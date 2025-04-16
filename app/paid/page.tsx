@@ -616,17 +616,17 @@ export default function Home() {
                           </div>
 
                           <div className="absolute transform translate-y-7 right-0 hidden group-hover:flex flex-col items-end bg-gray-200 text-black text-xs rounded py-1 px-2 whitespace-nowrap z-50">
-                            <span className="font-bold">
+                            <p className="font-bold">
                               {format(resv.startTime, "yyyy/MM/dd　H:mm")} -{" "}
                               {format(resv.endTime, "H:mm")}
-                            </span>
-                            <span className="text-xs">
+                            </p>
+                            <p className="text-xs">
                               {resv.type}　@{roomsById[resv.roomId].name}
-                            </span>
-                            <span className="text-xs">{resv.status}</span>
-                            <span className="text-xs">{resv.title}</span>
-                            <span className="text-xs">{resv.description}</span>
-                            <span className="text-xs">{resv.userId}</span>
+                            </p>
+                            <p className="text-xs">{resv.status}</p>
+                            <p className="text-xs">{resv.title}</p>
+                            <p className="text-xs">{resv.description}</p>
+                            <p className="text-xs">{resv.userId}</p>
                           </div>
                         </div>
                       ))}
